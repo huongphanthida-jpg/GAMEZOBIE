@@ -1,0 +1,1869 @@
+<html lang="vi"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bắn Zombie - Chiến Binh Tri Thức</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&amp;family=Inter:wght@400;500;600;800&amp;display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --danger: #EF4444;
+            --success: #10B981;
+            --dark: #0f172a;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--dark);
+            color: white;
+            overflow: hidden; 
+            user-select: none;
+            touch-action: none; /* Rất quan trọng để chặn cuộn trên mobile */
+            -webkit-touch-callout: none;
+        }
+        
+        /* Phông chữ béo dễ thương cho Tiêu đề */
+        .heading-font {
+            font-family: 'Fredoka', sans-serif;
+        }
+        
+        /* Hiệu ứng viền chữ 3D (dành cho các màn hình trong game) */
+        .cute-title {
+            text-shadow: 4px 4px 0px #0f172a, -2px -2px 0px #0f172a, 2px -2px 0px #0f172a, -2px 2px 0px #0f172a, 2px 2px 0px #0f172a;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        .screen {
+            position: absolute;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            display: flex; flex-direction: column;
+            transition: opacity 0.3s ease;
+        }
+        .hidden-screen {
+            display: none !important;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        #game-ui { pointer-events: none; }
+        #game-ui > * { pointer-events: auto; }
+        
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        #custom-modal { z-index: 9999; }
+        .modal-content { animation: slideIn 0.2s ease-out; }
+        @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .hud-text { text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; }
+        
+        .bg-pattern {
+            background-image: radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px);
+            background-size: 30px 30px;
+            background-color: #0f172a;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Nút bấm nổi 3D */
+        .btn-3d {
+            box-shadow: 0 5px 0 rgba(0,0,0,0.3);
+            transition: all 0.1s;
+        }
+        .btn-3d:active {
+            box-shadow: 0 0 0 rgba(0,0,0,0.3);
+            transform: translateY(5px);
+        }
+
+        /* Yêu cầu màn hình ngang trên di động khi vào game */
+        @media (max-width: 900px) and (orientation: portrait) {
+            #game-screen:not(.hidden-screen) #portrait-warning {
+                display: flex !important;
+            }
+        }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.pointer-events-auto{pointer-events:auto}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.inset-0{inset:0px}.z-0{z-index:0}.z-10{z-index:10}.z-20{z-index:20}.z-40{z-index:40}.z-50{z-index:50}.z-\[99999\]{z-index:99999}.z-\[9999\]{z-index:9999}.mx-auto{margin-left:auto;margin-right:auto}.mb-0\.5{margin-bottom:0.125rem}.mb-1{margin-bottom:0.25rem}.mb-10{margin-bottom:2.5rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.ml-1{margin-left:0.25rem}.mr-1\.5{margin-right:0.375rem}.mt-1{margin-top:0.25rem}.mt-10{margin-top:2.5rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}.mt-auto{margin-top:auto}.line-clamp-3{overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-\[70vh\]{height:70vh}.h-fit{height:-moz-fit-content;height:fit-content}.h-full{height:100%}.max-h-48{max-height:12rem}.max-h-\[95vh\]{max-height:95vh}.min-h-\[20px\]{min-height:20px}.w-24{width:6rem}.w-\[90\%\]{width:90%}.w-\[95\%\]{width:95%}.w-full{width:100%}.min-w-\[600px\]{min-width:600px}.max-w-2xl{max-width:42rem}.max-w-5xl{max-width:64rem}.max-w-6xl{max-width:72rem}.max-w-\[80\%\]{max-width:80%}.max-w-lg{max-width:32rem}.max-w-md{max-width:28rem}.max-w-sm{max-width:24rem}.max-w-xs{max-width:20rem}.flex-1{flex:1 1 0%}.border-collapse{border-collapse:collapse}@keyframes pulse{50%{opacity:.5}}.animate-pulse{animation:pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite}.cursor-pointer{cursor:pointer}.select-none{-webkit-user-select:none;user-select:none}.resize-none{resize:none}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-row{flex-direction:row}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-end{align-items:flex-end}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rounded-2xl{border-radius:1rem}.rounded-\[2rem\]{border-radius:2rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.rounded-t-lg{border-top-left-radius:0.5rem;border-top-right-radius:0.5rem}.border{border-width:1px}.border-2{border-width:2px}.border-b{border-bottom-width:1px}.border-l-\[3px\]{border-left-width:3px}.border-t-4{border-top-width:4px}.border-blue-500\/50{border-color:rgb(59 130 246 / 0.5)}.border-emerald-500{--tw-border-opacity:1;border-color:rgb(16 185 129 / var(--tw-border-opacity, 1))}.border-emerald-500\/30{border-color:rgb(16 185 129 / 0.3)}.border-emerald-600\/50{border-color:rgb(5 150 105 / 0.5)}.border-indigo-500{--tw-border-opacity:1;border-color:rgb(99 102 241 / var(--tw-border-opacity, 1))}.border-indigo-500\/40{border-color:rgb(99 102 241 / 0.4)}.border-indigo-700\/50{border-color:rgb(67 56 202 / 0.5)}.border-red-500\/30{border-color:rgb(239 68 68 / 0.3)}.border-slate-500{--tw-border-opacity:1;border-color:rgb(100 116 139 / var(--tw-border-opacity, 1))}.border-slate-500\/50{border-color:rgb(100 116 139 / 0.5)}.border-slate-600{--tw-border-opacity:1;border-color:rgb(71 85 105 / var(--tw-border-opacity, 1))}.border-slate-600\/50{border-color:rgb(71 85 105 / 0.5)}.border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85 / var(--tw-border-opacity, 1))}.border-slate-700\/50{border-color:rgb(51 65 85 / 0.5)}.border-slate-700\/80{border-color:rgb(51 65 85 / 0.8)}.border-white\/10{border-color:rgb(255 255 255 / 0.1)}.border-yellow-500\/30{border-color:rgb(234 179 8 / 0.3)}.border-l-amber-500{--tw-border-opacity:1;border-left-color:rgb(245 158 11 / var(--tw-border-opacity, 1))}.border-l-blue-500{--tw-border-opacity:1;border-left-color:rgb(59 130 246 / var(--tw-border-opacity, 1))}.border-l-emerald-500{--tw-border-opacity:1;border-left-color:rgb(16 185 129 / var(--tw-border-opacity, 1))}.border-l-red-500{--tw-border-opacity:1;border-left-color:rgb(239 68 68 / var(--tw-border-opacity, 1))}.bg-\[\#0f172a\]\/95{background-color:rgb(15 23 42 / 0.95)}.bg-\[\#111827\]\/90{background-color:rgb(17 24 39 / 0.9)}.bg-\[\#1e293b\]{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-black\/60{background-color:rgb(0 0 0 / 0.6)}.bg-black\/80{background-color:rgb(0 0 0 / 0.8)}.bg-blue-900\/50{background-color:rgb(30 58 138 / 0.5)}.bg-cyan-600{--tw-bg-opacity:1;background-color:rgb(8 145 178 / var(--tw-bg-opacity, 1))}.bg-emerald-500{--tw-bg-opacity:1;background-color:rgb(16 185 129 / var(--tw-bg-opacity, 1))}.bg-emerald-600{--tw-bg-opacity:1;background-color:rgb(5 150 105 / var(--tw-bg-opacity, 1))}.bg-indigo-600{--tw-bg-opacity:1;background-color:rgb(79 70 229 / var(--tw-bg-opacity, 1))}.bg-indigo-900\/50{background-color:rgb(49 46 129 / 0.5)}.bg-sky-600{--tw-bg-opacity:1;background-color:rgb(2 132 199 / var(--tw-bg-opacity, 1))}.bg-slate-600{--tw-bg-opacity:1;background-color:rgb(71 85 105 / var(--tw-bg-opacity, 1))}.bg-slate-700{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.bg-slate-700\/80{background-color:rgb(51 65 85 / 0.8)}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-slate-800\/80{background-color:rgb(30 41 59 / 0.8)}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.bg-slate-900\/50{background-color:rgb(15 23 42 / 0.5)}.bg-slate-900\/80{background-color:rgb(15 23 42 / 0.8)}.bg-slate-900\/90{background-color:rgb(15 23 42 / 0.9)}.bg-slate-900\/95{background-color:rgb(15 23 42 / 0.95)}.bg-slate-950{--tw-bg-opacity:1;background-color:rgb(2 6 23 / var(--tw-bg-opacity, 1))}.bg-slate-950\/50{background-color:rgb(2 6 23 / 0.5)}.bg-red-600{--tw-bg-opacity:1;background-color:rgb(220 38 38 / var(--tw-bg-opacity, 1))}.bg-gradient-to-b{background-image:linear-gradient(to bottom, var(--tw-gradient-stops))}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.from-emerald-500{--tw-gradient-from:#10b981 var(--tw-gradient-from-position);--tw-gradient-to:rgb(16 185 129 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-indigo-600{--tw-gradient-from:#4f46e5 var(--tw-gradient-from-position);--tw-gradient-to:rgb(79 70 229 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-transparent{--tw-gradient-from:transparent var(--tw-gradient-from-position);--tw-gradient-to:rgb(0 0 0 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.to-purple-600{--tw-gradient-to:#9333ea var(--tw-gradient-to-position)}.to-slate-950\/80{--tw-gradient-to:rgb(2 6 23 / 0.8) var(--tw-gradient-to-position)}.to-teal-500{--tw-gradient-to:#14b8a6 var(--tw-gradient-to-position)}.p-1\.5{padding:0.375rem}.p-2{padding:0.5rem}.p-3{padding:0.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.p-8{padding:2rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.px-8{padding-left:2rem;padding-right:2rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-3\.5{padding-top:0.875rem;padding-bottom:0.875rem}.pb-0{padding-bottom:0px}.pb-2{padding-bottom:0.5rem}.pr-2{padding-right:0.5rem}.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-5xl{font-size:3rem;line-height:1}.text-6xl{font-size:3.75rem;line-height:1}.text-\[10px\]{font-size:10px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-black{font-weight:900}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-none{line-height:1}.leading-relaxed{line-height:1.625}.leading-snug{line-height:1.375}.tracking-wide{letter-spacing:0.025em}.tracking-widest{letter-spacing:0.1em}.text-amber-400{--tw-text-opacity:1;color:rgb(251 191 36 / var(--tw-text-opacity, 1))}.text-amber-500{--tw-text-opacity:1;color:rgb(245 158 11 / var(--tw-text-opacity, 1))}.text-blue-500{--tw-text-opacity:1;color:rgb(59 130 246 / var(--tw-text-opacity, 1))}.text-cyan-400{--tw-text-opacity:1;color:rgb(34 211 238 / var(--tw-text-opacity, 1))}.text-emerald-300{--tw-text-opacity:1;color:rgb(110 231 183 / var(--tw-text-opacity, 1))}.text-emerald-400{--tw-text-opacity:1;color:rgb(52 211 153 / var(--tw-text-opacity, 1))}.text-emerald-500{--tw-text-opacity:1;color:rgb(16 185 129 / var(--tw-text-opacity, 1))}.text-indigo-300{--tw-text-opacity:1;color:rgb(165 180 252 / var(--tw-text-opacity, 1))}.text-indigo-400{--tw-text-opacity:1;color:rgb(129 140 248 / var(--tw-text-opacity, 1))}.text-red-400{--tw-text-opacity:1;color:rgb(248 113 113 / var(--tw-text-opacity, 1))}.text-red-500{--tw-text-opacity:1;color:rgb(239 68 68 / var(--tw-text-opacity, 1))}.text-slate-200{--tw-text-opacity:1;color:rgb(226 232 240 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-yellow-400{--tw-text-opacity:1;color:rgb(250 204 21 / var(--tw-text-opacity, 1))}.underline{-webkit-text-decoration-line:underline;text-decoration-line:underline}.shadow{--tw-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_0_40px_rgba\(99\2c 102\2c 241\2c 0\.4\)\]{--tw-shadow:0 0 40px rgba(99,102,241,0.4);--tw-shadow-colored:0 0 40px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_4px_0_rgb\(30\2c 41\2c 59\)\]{--tw-shadow:0 4px 0 rgb(30,41,59);--tw-shadow-colored:0 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_4px_0_rgb\(5\2c 150\2c 105\)\]{--tw-shadow:0 4px 0 rgb(5,150,105);--tw-shadow-colored:0 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_4px_0_rgb\(51\2c 65\2c 85\)\]{--tw-shadow:0 4px 0 rgb(51,65,85);--tw-shadow-colored:0 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_4px_0_rgb\(67\2c 56\2c 202\)\]{--tw-shadow:0 4px 0 rgb(67,56,202);--tw-shadow-colored:0 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_4px_0_rgb\(8\2c 145\2c 178\)\]{--tw-shadow:0 4px 0 rgb(8,145,178);--tw-shadow-colored:0 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_5px_0_rgb\(4\2c 120\2c 87\)\]{--tw-shadow:0 5px 0 rgb(4,120,87);--tw-shadow-colored:0 5px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_5px_0_rgb\(51\2c 65\2c 85\)\]{--tw-shadow:0 5px 0 rgb(51,65,85);--tw-shadow-colored:0 5px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_5px_0_rgb\(67\2c 56\2c 202\)\]{--tw-shadow:0 5px 0 rgb(67,56,202);--tw-shadow-colored:0 5px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_3px_0_rgb\(220\2c 38\2c 38\)\]{--tw-shadow:0 3px 0 rgb(220,38,38);--tw-shadow-colored:0 3px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_3px_0_rgb\(67\2c 56\2c 202\)\]{--tw-shadow:0 3px 0 rgb(67,56,202);--tw-shadow-colored:0 3px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_3px_0_rgb\(8\2c 145\2c 178\)\]{--tw-shadow:0 3px 0 rgb(8,145,178);--tw-shadow-colored:0 3px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.outline-none{outline:2px solid transparent;outline-offset:2px}.drop-shadow{--tw-drop-shadow:drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.06));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur{--tw-backdrop-blur:blur(8px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-xl{--tw-backdrop-blur:blur(24px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.hover\:bg-cyan-500:hover{--tw-bg-opacity:1;background-color:rgb(6 182 212 / var(--tw-bg-opacity, 1))}.hover\:bg-emerald-400:hover{--tw-bg-opacity:1;background-color:rgb(52 211 153 / var(--tw-bg-opacity, 1))}.hover\:bg-emerald-500:hover{--tw-bg-opacity:1;background-color:rgb(16 185 129 / var(--tw-bg-opacity, 1))}.hover\:bg-indigo-500:hover{--tw-bg-opacity:1;background-color:rgb(99 102 241 / var(--tw-bg-opacity, 1))}.hover\:bg-sky-500:hover{--tw-bg-opacity:1;background-color:rgb(14 165 233 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-500:hover{--tw-bg-opacity:1;background-color:rgb(100 116 139 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-600:hover{--tw-bg-opacity:1;background-color:rgb(71 85 105 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-700:hover{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.hover\:bg-red-500:hover{--tw-bg-opacity:1;background-color:rgb(239 68 68 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-800:hover{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.hover\:from-emerald-400:hover{--tw-gradient-from:#34d399 var(--tw-gradient-from-position);--tw-gradient-to:rgb(52 211 153 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.hover\:from-indigo-500:hover{--tw-gradient-from:#6366f1 var(--tw-gradient-from-position);--tw-gradient-to:rgb(99 102 241 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.hover\:to-purple-500:hover{--tw-gradient-to:#a855f7 var(--tw-gradient-to-position)}.hover\:to-teal-400:hover{--tw-gradient-to:#2dd4bf var(--tw-gradient-to-position)}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.focus\:border-emerald-500:focus{--tw-border-opacity:1;border-color:rgb(16 185 129 / var(--tw-border-opacity, 1))}.focus\:border-indigo-500:focus{--tw-border-opacity:1;border-color:rgb(99 102 241 / var(--tw-border-opacity, 1))}@media (min-width: 640px){.sm\:block{display:block}.sm\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.sm\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}}@media (min-width: 768px){.md\:mb-2{margin-bottom:0.5rem}.md\:mb-4{margin-bottom:1rem}.md\:mb-8{margin-bottom:2rem}.md\:mr-3{margin-right:0.75rem}.md\:flex{display:flex}.md\:hidden{display:none}.md\:max-h-60{max-height:15rem}.md\:flex-row{flex-direction:row}.md\:items-center{align-items:center}.md\:gap-2{gap:0.5rem}.md\:gap-3{gap:0.75rem}.md\:gap-4{gap:1rem}.md\:gap-8{gap:2rem}.md\:whitespace-normal{white-space:normal}.md\:rounded-2xl{border-radius:1rem}.md\:rounded-xl{border-radius:0.75rem}.md\:border-l-4{border-left-width:4px}.md\:p-10{padding:2.5rem}.md\:p-12{padding:3rem}.md\:p-2{padding:0.5rem}.md\:p-2\.5{padding:0.625rem}.md\:p-3{padding:0.75rem}.md\:p-4{padding:1rem}.md\:p-5{padding:1.25rem}.md\:p-6{padding:1.5rem}.md\:p-8{padding:2rem}.md\:px-3{padding-left:0.75rem;padding-right:0.75rem}.md\:px-5{padding-left:1.25rem;padding-right:1.25rem}.md\:px-6{padding-left:1.5rem;padding-right:1.5rem}.md\:px-8{padding-left:2rem;padding-right:2rem}.md\:py-1{padding-top:0.25rem;padding-bottom:0.25rem}.md\:py-2{padding-top:0.5rem;padding-bottom:0.5rem}.md\:py-3{padding-top:0.75rem;padding-bottom:0.75rem}.md\:py-4{padding-top:1rem;padding-bottom:1rem}.md\:pb-4{padding-bottom:1rem}.md\:text-2xl{font-size:1.5rem;line-height:2rem}.md\:text-3xl{font-size:1.875rem;line-height:2.25rem}.md\:text-4xl{font-size:2.25rem;line-height:2.5rem}.md\:text-5xl{font-size:3rem;line-height:1}.md\:text-7xl{font-size:4.5rem;line-height:1}.md\:text-base{font-size:1rem;line-height:1.5rem}.md\:text-lg{font-size:1.125rem;line-height:1.75rem}.md\:text-sm{font-size:0.875rem;line-height:1.25rem}.md\:text-xl{font-size:1.25rem;line-height:1.75rem}.md\:leading-relaxed{line-height:1.625}}@media (min-width: 1024px){.lg\:col-span-1{grid-column:span 1 / span 1}.lg\:col-span-2{grid-column:span 2 / span 2}.lg\:flex{display:flex}.lg\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.lg\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}}</style>
+<script>
+window.__EXPORTED_GAME_DATA__ = {"id":"g__ikbzqr10k","title":"CHINH PHỤC ZOMBIE TRI THỨC","subject":"HOÁ HỌC","grade":"10","desc":"Bạn phải vượt qua 4 màn để bảo vệ ngôi nhà tri thức khỏi ZOMBIE","lives":5,"speed":"normal","sheetUrl":"https://script.google.com/macros/s/AKfycbzXrkmBKOQoso8cl2fyQBhQLtxHcImAQEYXly7z8EDFgE4cZaml2jkiMdfY5A5R5A9k/exec","stages":{"1":{"numQ":4,"time":15,"questions":[{"id":"q__g11dgrdyf","text":"Độ âm điện của một nguyên tử đặc trưng cho","a":"khả năng nhường electron của nguyên tử đó","b":"khả năng hút electron của nguyên tử đó khi hình thành liên kết hóa học","c":"khối lượng của nguyên tử đó","d":"thể tích của nguyên tử đó","ans":"b","exp":"","points":100},{"id":"q__2cx8wiwcs","text":"Chu kì 3 của Bảng tuần hoàn gồm có bao nhiêu nguyên tố hóa học?","a":"2 nguyên tố","b":"8 nguyên tố","c":"18 nguyên tố","d":"32 nguyên tố","ans":"a","exp":"","points":100},{"id":"q__vq5au36f3","text":"Số thứ tự của nhóm A trong Bảng tuần hoàn bằng","a":"số lớp electron","b":"số electron lớp ngoài cùng (electron hóa trị)","c":"tổng số electron nguyên tử","d":"số neutron trong hạt nhân","ans":"b","exp":"","points":100},{"id":"q__s5xhwsm9b","text":"Số thứ tự của chu kì trong Bảng tuần hoàn bằng","a":"số electron hóa trị","b":"số electron lớp ngoài cùng","c":"số lớp electron của nguyên tử","d":"số hiệu nguyên tử","ans":"b","exp":"","points":100},{"id":"q__r74miys8j","text":"Nguyên tố nào sau đây có độ âm điện lớn nhất trong Bảng tuần hoàn?","a":"Fluorine (F)","b":"Oxygen (O)","c":"Chlorine (Cl)","d":"Cesium (Cs)","ans":"a","exp":"","points":100},{"id":"q__cq1ay4gbm","text":"Cấu hình electron nguyên tử biểu diễn","a":"sự phân bố các proton trong hạt nhân","b":"sự phân bố các electron trên các lớp và phân lớp","c":"vị trí của các neutron trong hạt nhân","d":"hình dạng của các orbital nguyên tử","ans":"b","exp":"","points":100}]},"2":{"numQ":4,"time":20,"questions":[{"id":"q__bett31u25","text":"Nguyên tử nào sau đây có cấu hình electron lớp ngoài cùng dạng 3s² 3p¹?","a":"Na (Z = 11)","b":"Al (Z = 13)","c":"Mg (Z = 12)","d":"Si (Z = 14)","ans":"b","exp":"","points":100},{"id":"q__bvwyrbmcq","text":"Một nguyên tử X có cấu hình electron 1s² 2s² 2p⁶ 3s². Nguyên tử X có đặc điểm là","a":"Phi kim","b":"Kim loại","c":"Khí hiếm","d":"Phi kim mạnh","ans":"b","exp":"","points":100},{"id":"q__u8xl8mjky","text":"Nguyên tử K (Z = 19) có số electron ở lớp ngoài cùng là","a":"1","b":"2","c":"7","d":"8","ans":"a","exp":"","points":100},{"id":"q__tm8iuuqy8","text":"Trong một chu kì, đi từ trái sang phải, tính kim loại và tính phi kim của các nguyên tố biến đổi như thế nào?","a":"Tính kim loại tăng, tính phi kim giảm","b":"Tính kim loại giảm, tính phi kim tăng","c":"Cả tính kim loại và tính phi kim đều tăng","d":"Cả tính kim loại và tính phi kim đều giảm","ans":"a","exp":"","points":100},{"id":"q__j08wtgw9w","text":"Lớp electron thứ 2 (lớp L, n = 2) có tổng số orbital nguyên tử (AO) là","a":"1","b":"2","c":"4","d":"8","ans":"c","exp":"","points":100},{"id":"q__8fejmcnor","text":"Thứ tự mức năng lượng của các phân lớp electron tăng dần nào sau đây là ĐÚNG?","a":"1s < 2s < 2p < 3s < 3p < 3d < 4s","b":"1s < 2s < 2p < 3s < 3p < 4s < 3d","c":"1s < 2s < 3s < 2p < 3p < 4s < 3d","d":"1s < 2s < 2p < 3s < 4s < 3p < 3d","ans":"a","exp":"Mức năng lượng 3d < 4s","points":100}]},"3":{"numQ":3,"time":25,"questions":[{"id":"q__2dw3ru2jk","text":"Nguyên tố nào sau đây thuộc khối nguyên tố s?","a":"Carbon (Z = 6)","b":"Oxygen (Z = 8)","c":"Sodium (Z = 11)","d":"Chlorine (Z = 17)","ans":"c","exp":"","points":150},{"id":"q__quvc8pqfv","text":"Nguyên tử nguyên tố X có Z = 17. Cấu hình electron của X là","a":"1s² 2s² 2p⁶ 3s² 3p⁴","b":"1s² 2s² 2p⁶ 3s² 3p⁵","c":"1s² 2s² 2p⁶ 3s² 3p⁶","d":"1s² 2s² 2p⁶ 3s¹","ans":"b","exp":"","points":150},{"id":"q__9wks44g5i","text":"Nguyên tố X thuộc chu kì 3, nhóm VA. Cấu hình electron lớp ngoài cùng của X là","a":"3s² 3p³","b":"2s² 2p³","c":"3s² 3p⁵","d":"3s³","ans":"a","exp":"","points":150},{"id":"q__9btooxzp4","text":"Cặp nguyên tử nào sau đây thuộc cùng một nguyên tố hóa học?","a":"X (6p, 6n) và Y (7p, 6n)","b":"M (11p, 12n) và N (11p, 13n)","c":"E (8p, 8n) và F (9p, 9n)","d":"G (19p, 20n) và H (20p, 20n)","ans":"b","exp":"","points":100}]},"4":{"numQ":2,"time":30,"questions":[{"id":"q__y6g7vxtac","text":"Tổng số hạt cơ bản (p, n, e) trong nguyên tử ¹⁹₉F là","a":"19","b":"9","c":"28","d":"10","ans":"c","exp":"","points":150},{"id":"q__gj8tzi4tf","text":"Đồng vị chlorine trong tự nhiên gồm ³⁵₁₇Cl (75,77%) và ³⁷₁₇Cl (24,23%). Nguyên tử khối trung bình của chlorine là","a":"35,50","b":"35,48","c":"36,00","d":"35,25","ans":"b","exp":"","points":200},{"id":"q__a51nen6le","text":"Nguyên tử nguyên tố X có tổng số electron ở các phân lớp p là 11. Số hiệu nguyên tử của X là","a":"11","b":"15","c":"17","d":"19","ans":"d","exp":"","points":100},{"id":"q__bpwxie09j","text":"Cho các nguyên tố ₁₁Na, ₁₂Mg, ₁₃Al. Chiều tăng dần bán kính nguyên tử là","a":"Na < Mg < Al","b":"Al < Mg < Na","c":"Mg < Al < Na","d":"Na < Al < Mg","ans":"a","exp":"","points":100}]}}};
+</script>
+</head>
+<body>
+
+    <!-- 1. TRANG CHỦ -->
+    <div id="home-screen" class="screen bg-pattern justify-center items-center relative z-10 hidden-screen">
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-slate-950/80 pointer-events-none"></div>
+        <!-- Cập nhật UI Trang chủ giống với ảnh yêu cầu -->
+        <div class="text-center z-10 bg-[#0f172a]/95 backdrop-blur-xl p-8 md:p-12 rounded-[2rem] shadow-2xl max-w-2xl w-[95%] border border-indigo-500/40">
+            <h1 id="secret-admin-trigger" class="heading-font text-5xl md:text-7xl text-cyan-400 font-black mb-1 cursor-pointer select-none tracking-wide">BẮN ZOMBIE</h1>
+            <h2 class="heading-font text-xl md:text-2xl text-yellow-400 font-bold mb-8 uppercase tracking-widest">Chiến Binh Tri Thức</h2>
+            
+            <p class="text-slate-300 mb-10 text-sm md:text-base max-w-[80%] mx-auto leading-relaxed">Vượt qua 4 màn chơi bằng cách ngắm bắn Zombie mang đáp án chính xác!</p>
+            
+            <div class="flex flex-col gap-4 max-w-xs mx-auto w-full">
+                <button onclick="UIManager.showScreen('library-screen')" class="btn-3d bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-3.5 px-6 rounded-full text-base flex justify-center items-center gap-2 shadow-[0_5px_0_rgb(4,120,87)]">
+                    🎮 BẮT ĐẦU CHƠI
+                </button>
+                <button onclick="showHelp()" class="btn-3d bg-slate-700 hover:bg-slate-600 text-white font-bold py-3.5 px-6 rounded-full border border-slate-500/50 text-base flex justify-center items-center gap-2 shadow-[0_5px_0_rgb(51,65,85)]">
+                    📖 HƯỚNG DẪN CHƠI
+                </button>
+            </div>
+            
+            <div class="mt-10 flex justify-center items-center gap-3">
+                <span class="text-slate-400 font-medium text-sm">Âm thanh:</span>
+                <button onclick="AudioManager.toggleMute()" id="btn-mute-home" class="px-4 py-1.5 bg-[#1e293b] rounded-full hover:bg-slate-700 transition font-bold shadow-lg border border-slate-600/50 text-sm flex items-center gap-1.5">🔊 Bật</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. KHO GAME -->
+    <div id="library-screen" class="screen bg-slate-900 hidden-screen p-4 md:p-6 overflow-y-auto z-10">
+        <div class="max-w-5xl mx-auto w-full">
+            <div class="flex justify-between items-center mb-6 md:mb-8 bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-lg">
+                <h2 class="text-2xl md:text-3xl font-bold text-white heading-font tracking-wide">📚 Chọn Bài Học</h2>
+                <button onclick="UIManager.showScreen('home-screen')" class="bg-slate-700 px-4 py-2 rounded-full font-bold hover:bg-slate-600 transition shadow">⬅ Quay lại</button>
+            </div>
+            <div id="game-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Game render here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. MÀN HÌNH ĐĂNG NHẬP HỌC SINH -->
+    <div id="student-login-screen" class="screen bg-pattern justify-center items-center relative z-10 hidden-screen">
+        <div class="glass-panel p-6 md:p-8 rounded-[2rem] shadow-2xl max-w-md w-[95%] border-t-4 border-emerald-500 text-center">
+            <h2 class="heading-font text-3xl md:text-4xl text-emerald-400 mb-6 cute-title">BÁO DANH</h2>
+            <p class="text-slate-300 mb-6 text-sm md:text-base">Em hãy nhập thông tin để ghi nhận điểm số nhé!</p>
+            <div class="space-y-4 mb-8 text-left">
+                <div>
+                    <label class="block text-slate-300 font-bold mb-2">Họ và tên của em:</label>
+                    <input type="text" id="student-name" class="w-full bg-slate-900 border-2 border-slate-600 rounded-xl p-3 text-white outline-none focus:border-emerald-500 font-bold text-lg" placeholder="VD: Nguyễn Văn A">
+                </div>
+                <div>
+                    <label class="block text-slate-300 font-bold mb-2">Lớp:</label>
+                    <input type="text" id="student-class" class="w-full bg-slate-900 border-2 border-slate-600 rounded-xl p-3 text-white outline-none focus:border-emerald-500 font-bold text-lg" placeholder="VD: 12A1">
+                </div>
+            </div>
+            <button onclick="Game.submitLogin()" class="btn-3d w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold py-3 px-8 rounded-full text-xl shadow-[0_5px_0_rgb(4,120,87)]">
+                🚀 VÀO CHƠI NGAY
+            </button>
+            <button onclick="UIManager.showScreen('home-screen')" id="btn-back-home" class="mt-6 text-slate-400 hover:text-white underline text-sm font-semibold">Quay lại trang chủ</button>
+        </div>
+    </div>
+
+    <!-- 4. KHU VỰC GIÁO VIÊN -->
+    <div id="teacher-screen" class="screen bg-slate-900 p-4 md:p-6 overflow-y-auto flex-row z-10">
+        <div class="max-w-6xl mx-auto w-full flex flex-col h-full">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow gap-4">
+                <div>
+                    <h2 class="text-2xl md:text-3xl font-bold text-white heading-font text-indigo-400">⚙️ Quản Trị Giáo Viên</h2>
+                    <p class="text-slate-400 text-sm mt-1">Tạo, chỉnh sửa và xuất bản game độc lập.</p>
+                </div>
+                <div class="flex flex-wrap gap-2 md:gap-3">
+                    <button onclick="TeacherManager.createNewGame()" class="btn-3d bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-full font-bold text-white shadow shadow-[0_4px_0_rgb(67,56,202)]">➕ Tạo Game Mới</button>
+                    <button onclick="UIManager.showScreen('home-screen')" class="bg-slate-700 px-4 py-2 rounded-full font-bold hover:bg-slate-600 transition shadow">🏠 Trở về</button>
+                </div>
+            </div>
+
+            <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden flex-1 flex flex-col shadow-lg">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[600px]">
+                        <thead>
+                            <tr class="bg-slate-900 border-b border-slate-700 text-slate-300">
+                                <th class="p-4 font-bold">Tên Game / Chủ Đề</th>
+                                <th class="p-4 font-bold">Môn - Lớp</th>
+                                <th class="p-4 font-bold text-center">Số Câu</th>
+                                <th class="p-4 font-bold text-right">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teacher-game-list" class="overflow-y-auto text-sm md:text-base">
+                <tr class="border-b border-slate-700 hover:bg-slate-800 transition">
+                    <td class="p-4">
+                        <div class="font-bold text-indigo-300">Chiến Dịch Hóa Học 11</div>
+                        <div class="text-xs text-slate-500">Bảo vệ căn cứ qua 4 màn bằng kiến thức v...</div>
+                    </td>
+                    <td class="p-4 text-slate-300 font-semibold">Hóa học - Lớp 11</td>
+                    <td class="p-4 text-center font-black text-emerald-400">16</td>
+                    <td class="p-4 text-right flex justify-end gap-2">
+                        <button onclick="TeacherManager.exportGameFromList('demo_chem_01')" class="btn-3d bg-cyan-600 hover:bg-cyan-500 px-3 py-1.5 rounded-full text-xs md:text-sm text-white font-bold shadow-[0_3px_0_rgb(8,145,178)]" title="Xuất file HTML độc lập">Xuất HTML</button>
+                        <button onclick="TeacherManager.editGame('demo_chem_01')" class="btn-3d bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-full text-xs md:text-sm text-white font-bold shadow-[0_3px_0_rgb(67,56,202)]">Sửa</button>
+                        <button onclick="TeacherManager.deleteGame('demo_chem_01')" class="btn-3d bg-red-600 hover:bg-red-500 px-3 py-1.5 rounded-full text-xs md:text-sm text-white font-bold shadow-[0_3px_0_rgb(220,38,38)]">Xóa</button>
+                    </td>
+                </tr>
+            
+                <tr class="border-b border-slate-700 hover:bg-slate-800 transition">
+                    <td class="p-4">
+                        <div class="font-bold text-indigo-300">CHINH PHỤC ZOMBIE TRI THỨC</div>
+                        <div class="text-xs text-slate-500">Bạn phải vượt qua 4 màn để bảo vệ ngôi n...</div>
+                    </td>
+                    <td class="p-4 text-slate-300 font-semibold">HOÁ HỌC - Lớp 10</td>
+                    <td class="p-4 text-center font-black text-emerald-400">20</td>
+                    <td class="p-4 text-right flex justify-end gap-2">
+                        <button onclick="TeacherManager.exportGameFromList('g__ikbzqr10k')" class="btn-3d bg-cyan-600 hover:bg-cyan-500 px-3 py-1.5 rounded-full text-xs md:text-sm text-white font-bold shadow-[0_3px_0_rgb(8,145,178)]" title="Xuất file HTML độc lập">Xuất HTML</button>
+                        <button onclick="TeacherManager.editGame('g__ikbzqr10k')" class="btn-3d bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-full text-xs md:text-sm text-white font-bold shadow-[0_3px_0_rgb(67,56,202)]">Sửa</button>
+                        <button onclick="TeacherManager.deleteGame('g__ikbzqr10k')" class="btn-3d bg-red-600 hover:bg-red-500 px-3 py-1.5 rounded-full text-xs md:text-sm text-white font-bold shadow-[0_3px_0_rgb(220,38,38)]">Xóa</button>
+                    </td>
+                </tr>
+            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. TRÌNH CHỈNH SỬA GAME -->
+    <div id="editor-screen" class="screen bg-slate-900 p-4 md:p-6 overflow-y-auto z-20 hidden-screen">
+        <div class="max-w-6xl mx-auto w-full">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 bg-slate-800 p-4 rounded-2xl border border-slate-700 gap-4 shadow-lg">
+                <h2 id="editor-title" class="text-2xl md:text-3xl font-bold text-indigo-400 heading-font">Chỉnh sửa Game</h2>
+                <div class="flex flex-wrap gap-2 justify-center">
+                    <button onclick="TeacherManager.saveCurrentGame()" class="btn-3d bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-full font-bold shadow-[0_4px_0_rgb(5,150,105)] text-white">💾 Lưu Lại</button>
+                    <button onclick="TeacherManager.exportStandaloneHTML()" class="btn-3d bg-cyan-600 hover:bg-cyan-500 px-4 py-2 rounded-full font-bold shadow-[0_4px_0_rgb(8,145,178)] text-white">🌍 Xuất File HTML</button>
+                    <button onclick="UIManager.showScreen('teacher-screen')" class="bg-slate-700 px-4 py-2 rounded-full font-bold hover:bg-slate-600 transition shadow">Đóng</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Config -->
+                <div class="lg:col-span-1 bg-slate-800 p-5 rounded-2xl border border-slate-700 h-fit shadow-lg">
+                    <h3 class="text-xl font-bold mb-4 text-white border-b border-slate-700 pb-2 heading-font">Thông tin chung</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-400 mb-1">Tên Game</label>
+                            <input type="text" id="edit-title" class="w-full bg-slate-900 border border-slate-600 rounded-xl p-2 text-white outline-none focus:border-indigo-500">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-400 mb-1">Môn học</label>
+                                <input type="text" id="edit-subject" class="w-full bg-slate-900 border border-slate-600 rounded-xl p-2 text-white outline-none focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-400 mb-1">Lớp</label>
+                                <input type="text" id="edit-grade" class="w-full bg-slate-900 border border-slate-600 rounded-xl p-2 text-white outline-none focus:border-indigo-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-400 mb-1">Mô tả ngắn</label>
+                            <textarea id="edit-desc" rows="2" class="w-full bg-slate-900 border border-slate-600 rounded-xl p-2 text-white outline-none resize-none focus:border-indigo-500"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-emerald-400 mb-1">🔗 Link Web App (Lưu điểm về Sheets) - Tùy chọn</label>
+                            <input type="text" id="edit-sheet-url" class="w-full bg-slate-900 border border-emerald-600/50 rounded-xl p-2 text-white outline-none focus:border-emerald-500" placeholder="Dán link https://script.google.com/macros/s/... vào đây">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-400 mb-1">Số mạng (Tim)</label>
+                                <input type="number" id="edit-lives" min="1" max="10" class="w-full bg-slate-900 border border-slate-600 rounded-xl p-2 text-white outline-none focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-400 mb-1">Tốc độ Zombie</label>
+                                <select id="edit-speed" class="w-full bg-slate-900 border border-slate-600 rounded-xl p-2 text-white outline-none focus:border-indigo-500">
+                                    <option value="slow">Chậm (Dễ)</option>
+                                    <option value="normal">Vừa (TB)</option>
+                                    <option value="fast">Nhanh (Khó)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <p class="text-xs text-amber-400 font-bold mt-4">* Cần ít nhất 4 câu hỏi để chơi Chiến dịch 4 màn.</p>
+                    </div>
+                </div>
+
+                <!-- Questions -->
+                <div class="lg:col-span-2 bg-slate-800 p-5 rounded-2xl border border-slate-700 flex flex-col h-[70vh] shadow-lg">
+                    <!-- TABS -->
+                    <div class="flex gap-1 mb-4 border-b border-slate-700 pb-0 overflow-x-auto">
+                        <button onclick="TeacherManager.switchTab(1)" id="tab-btn-1" class="px-4 py-2 rounded-t-lg bg-indigo-600 font-bold text-white transition">Màn 1</button>
+                        <button onclick="TeacherManager.switchTab(2)" id="tab-btn-2" class="px-4 py-2 rounded-t-lg bg-slate-700 hover:bg-slate-600 font-bold text-slate-300 transition">Màn 2</button>
+                        <button onclick="TeacherManager.switchTab(3)" id="tab-btn-3" class="px-4 py-2 rounded-t-lg bg-slate-700 hover:bg-slate-600 font-bold text-slate-300 transition">Màn 3</button>
+                        <button onclick="TeacherManager.switchTab(4)" id="tab-btn-4" class="px-4 py-2 rounded-t-lg bg-slate-700 hover:bg-slate-600 font-bold text-slate-300 transition">Màn 4 (Boss)</button>
+                    </div>
+
+                    <!-- STAGE CONFIG -->
+                    <div class="flex flex-wrap items-end justify-between gap-4 mb-4 bg-slate-900 p-4 rounded-xl border border-slate-600 shadow-inner">
+                        <div class="flex gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 mb-1">Số câu bốc ra chơi:</label>
+                                <input type="number" id="stage-num-q" class="w-24 bg-slate-800 border border-slate-600 rounded-lg p-2 text-white text-sm outline-none focus:border-indigo-500 font-bold" min="1" value="3">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 mb-1">Thời gian/câu (giây):</label>
+                                <input type="number" id="stage-time-q" class="w-24 bg-slate-800 border border-slate-600 rounded-lg p-2 text-white text-sm outline-none focus:border-indigo-500 font-bold" min="5" value="30">
+                            </div>
+                        </div>
+                        <div class="text-right">
+                             <div class="text-sm font-bold text-slate-300">Ngân hàng màn này: <span id="q-count" class="text-emerald-400 text-xl font-black heading-font">0</span> câu</div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-3">
+                        <h3 class="text-lg font-bold text-indigo-300 heading-font">Danh sách câu hỏi</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="TeacherManager.addNewQuestion()" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-full text-sm font-bold transition shadow">➕ Thêm Câu</button>
+                            <input type="file" id="import-json" accept=".json" class="hidden" onchange="TeacherManager.importQuestions(event)">
+                            <button onclick="document.getElementById('import-json').click()" class="bg-slate-600 hover:bg-slate-500 px-3 py-1.5 rounded-full text-sm font-bold transition shadow">📥 Nhập JSON</button>
+                            <button onclick="TeacherManager.exportJSON()" class="bg-sky-600 hover:bg-sky-500 px-3 py-1.5 rounded-full text-sm font-bold text-white transition shadow">📤 Xuất JSON</button>
+                        </div>
+                    </div>
+                    
+                    <div id="questions-list" class="flex-1 overflow-y-auto pr-2 space-y-4 custom-scrollbar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. MÀN HÌNH GAME -->
+    <div id="game-screen" class="screen hidden-screen bg-slate-950 relative z-0">
+        <canvas id="gameCanvas" class="absolute inset-0"></canvas>
+        
+        <!-- Cảnh báo Portrait trên Mobile -->
+        <div id="portrait-warning" class="absolute inset-0 bg-slate-900/95 z-[99999] hidden flex-col justify-center items-center text-center p-6 backdrop-blur-md">
+            <div class="text-6xl mb-6 animate-pulse">🔄</div>
+            <h2 class="text-2xl md:text-3xl font-bold text-cyan-400 mb-2 heading-font">Hãy Xoay Ngang Thiết Bị!</h2>
+            <p class="text-slate-200 text-base">Trò chơi yêu cầu màn hình ngang để bạn có thể nhìn thấy Zombie từ xa.</p>
+        </div>
+
+        <!-- Game HUD - Đã được làm mỏng, nhỏ gọn trên mobile -->
+        <div id="game-ui" class="absolute inset-0 flex flex-col p-1.5 md:p-4 pointer-events-none">
+            <!-- Khu vực Top -->
+            <div class="pointer-events-auto w-full max-w-6xl mx-auto flex flex-col gap-1.5 md:gap-2">
+                <!-- Thanh trạng thái -->
+                <div class="flex justify-between items-center bg-slate-900/80 backdrop-blur rounded-xl md:rounded-2xl p-1.5 md:p-2 md:px-5 border border-slate-700/50 shadow-lg">
+                    <div class="flex gap-2 md:gap-8 items-center">
+                        <div class="text-yellow-400 font-bold heading-font text-sm md:text-2xl hud-text flex items-center gap-1 bg-slate-950/50 px-2 py-0.5 md:px-3 md:py-1 rounded-full border border-yellow-500/30">
+                            <span class="text-base md:text-2xl drop-shadow">⭐</span> <span id="hud-score">0</span>
+                        </div>
+                        <div class="text-red-400 font-bold heading-font text-sm md:text-2xl hud-text flex items-center gap-1 bg-slate-950/50 px-2 py-0.5 md:px-3 md:py-1 rounded-full border border-red-500/30">
+                            <span class="text-base md:text-2xl drop-shadow">❤️</span> <span id="hud-lives">3</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Tiến trình -->
+                    <div class="hidden lg:flex gap-3 text-sm font-bold heading-font items-center">
+                        <span id="st-1" class="text-slate-500">Màn 1</span> <span class="text-slate-600">❯</span>
+                        <span id="st-2" class="text-slate-500">Màn 2</span> <span class="text-slate-600">❯</span>
+                        <span id="st-3" class="text-slate-500">Màn 3</span> <span class="text-slate-600">❯</span>
+                        <span id="st-4" class="text-slate-500">BOSS</span>
+                    </div>
+
+                    <div class="flex gap-2 md:gap-3 items-center">
+                        <!-- Đồng hồ đếm giờ -->
+                        <div class="text-white font-bold heading-font text-sm md:text-xl hud-text flex items-center gap-1 bg-blue-900/50 px-2 py-0.5 md:px-3 md:py-1 rounded-full border border-blue-500/50">
+                            <span class="text-base md:text-xl">⏱️</span> <span id="hud-timer">30s</span>
+                        </div>
+                        <div class="hidden md:flex bg-indigo-900/50 text-indigo-300 font-bold px-3 py-1.5 rounded-full text-sm border border-indigo-700/50 items-center shadow-inner">
+                            📝 <span id="hud-progress" class="ml-1">1/10</span>
+                        </div>
+                        <!-- Hiển thị ngắn gọn trên mobile -->
+                        <div class="md:hidden text-indigo-300 font-bold text-xs bg-indigo-900/50 px-2 py-1 rounded-full border border-indigo-700/50">
+                            <span id="hud-progress-mobile">1/10</span>
+                        </div>
+                        <button onclick="Game.togglePause()" class="bg-slate-700/80 p-1.5 md:p-2.5 rounded-full hover:bg-slate-600 border border-slate-500 shadow-lg transition backdrop-blur text-sm md:text-base leading-none">⏸️</button>
+                    </div>
+                </div>
+
+                <!-- Bảng câu hỏi -->
+                <div class="bg-[#111827]/90 p-2 md:p-4 rounded-xl md:rounded-2xl shadow-2xl border border-slate-700/80 flex flex-col gap-1.5 md:gap-3">
+                    <h2 id="ingame-question" class="text-sm md:text-xl font-bold text-center text-white mb-0.5 md:mb-2 leading-snug md:leading-relaxed text-shadow-sm line-clamp-3">Nội dung câu hỏi?</h2>
+                    
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-1.5 md:gap-3">
+                        <button class="option-box pointer-events-none bg-slate-800/80 p-1.5 md:p-3 rounded-lg md:rounded-xl border border-slate-700 border-l-[3px] md:border-l-4 border-l-red-500 flex items-center text-left shadow overflow-hidden">
+                            <span class="font-black text-red-500 text-sm md:text-xl mr-1.5 md:mr-3 heading-font">A.</span> <span id="ingame-optA" class="text-xs md:text-base text-slate-200 font-semibold truncate md:whitespace-normal">Đáp án A</span>
+                        </button>
+                        <button class="option-box pointer-events-none bg-slate-800/80 p-1.5 md:p-3 rounded-lg md:rounded-xl border border-slate-700 border-l-[3px] md:border-l-4 border-l-blue-500 flex items-center text-left shadow overflow-hidden">
+                            <span class="font-black text-blue-500 text-sm md:text-xl mr-1.5 md:mr-3 heading-font">B.</span> <span id="ingame-optB" class="text-xs md:text-base text-slate-200 font-semibold truncate md:whitespace-normal">Đáp án B</span>
+                        </button>
+                        <button class="option-box pointer-events-none bg-slate-800/80 p-1.5 md:p-3 rounded-lg md:rounded-xl border border-slate-700 border-l-[3px] md:border-l-4 border-l-emerald-500 flex items-center text-left shadow overflow-hidden">
+                            <span class="font-black text-emerald-500 text-sm md:text-xl mr-1.5 md:mr-3 heading-font">C.</span> <span id="ingame-optC" class="text-xs md:text-base text-slate-200 font-semibold truncate md:whitespace-normal">Đáp án C</span>
+                        </button>
+                        <button class="option-box pointer-events-none bg-slate-800/80 p-1.5 md:p-3 rounded-lg md:rounded-xl border border-slate-700 border-l-[3px] md:border-l-4 border-l-amber-500 flex items-center text-left shadow overflow-hidden">
+                            <span class="font-black text-amber-500 text-sm md:text-xl mr-1.5 md:mr-3 heading-font">D.</span> <span id="ingame-optD" class="text-xs md:text-base text-slate-200 font-semibold truncate md:whitespace-normal">Đáp án D</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Info (Ẩn bớt trên mobile để không chắn màn hình) -->
+            <div class="mt-auto text-center pointer-events-none pb-2 md:pb-4 hidden sm:block">
+                <p class="text-slate-200 font-bold hud-text text-[10px] md:text-sm bg-black/60 inline-block px-3 py-1 md:px-5 md:py-2 rounded-full backdrop-blur border border-white/10 shadow-lg">
+                    🖱️ Di chuột/Chạm để ngắm ➖ Click/Chạm để bắn Zombie ĐÚNG!
+                </p>
+            </div>
+        </div>
+
+        <!-- Chuyển Màn Overlay -->
+        <div id="stage-transition" class="absolute inset-0 bg-slate-900/90 flex justify-center items-center hidden-screen z-40 backdrop-blur-md">
+            <div class="bg-slate-800 p-6 md:p-8 rounded-[2rem] border-2 border-indigo-500 text-center max-w-lg w-[90%] shadow-[0_0_40px_rgba(99,102,241,0.4)] pointer-events-auto">
+                <h2 id="st-title" class="text-3xl md:text-5xl font-bold mb-3 md:mb-4 heading-font text-cyan-400 cute-title">HOÀN THÀNH</h2>
+                <p id="st-desc" class="text-slate-300 mb-6 md:mb-8 text-base md:text-lg font-semibold">Chuẩn bị tinh thần cho thử thách tiếp theo!</p>
+                <button onclick="Game.startNextStage()" class="btn-3d bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 px-6 py-3 md:px-8 md:py-4 rounded-full font-bold text-white text-lg md:text-xl shadow-[0_5px_0_rgb(67,56,202)] w-full">
+                    TIẾP TỤC CHIẾN ĐẤU ⚔️
+                </button>
+            </div>
+        </div>
+
+        <!-- Pause Overlay -->
+        <div id="game-overlay" class="absolute inset-0 bg-black/80 flex justify-center items-center hidden-screen z-50 backdrop-blur-sm">
+            <div class="bg-slate-800 p-6 md:p-8 rounded-[2rem] border border-slate-600 text-center max-w-sm w-[90%] shadow-2xl pointer-events-auto">
+                <h2 id="overlay-title" class="text-3xl md:text-4xl font-bold mb-3 md:mb-4 heading-font text-white cute-title">TẠM DỪNG</h2>
+                <p id="overlay-desc" class="text-slate-300 mb-6 md:mb-8 font-semibold text-sm md:text-base"></p>
+                <div class="flex flex-col gap-3 md:gap-4">
+                    <button id="overlay-btn1" class="btn-3d bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 md:py-3 rounded-full font-bold text-white shadow-[0_4px_0_rgb(67,56,202)] hidden">TIẾP TỤC</button>
+                    <button id="overlay-btn2" onclick="Game.quitGame()" class="btn-3d bg-slate-700 hover:bg-slate-600 px-4 py-2.5 md:py-3 rounded-full font-bold text-white shadow-[0_4px_0_rgb(51,65,85)] text-sm md:text-base">THOÁT BÀN LÀM VIỆC</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. MÀN HÌNH KẾT QUẢ -->
+    <div id="result-screen" class="screen bg-pattern justify-center items-center hidden-screen z-20">
+        <div class="absolute inset-0 bg-slate-900/80 pointer-events-none"></div>
+        <div class="glass-panel p-6 md:p-10 rounded-[2rem] text-center max-w-2xl w-[95%] border-t-4 border-emerald-500 shadow-2xl overflow-y-auto max-h-[95vh] z-10">
+            <h1 id="result-title" class="text-3xl md:text-5xl font-black heading-font text-emerald-400 mb-2 cute-title">CHIẾN BINH BẤT BẠI!</h1>
+            
+            <p id="res-student-info" class="text-emerald-300 font-bold text-sm md:text-xl mb-6 bg-slate-900/50 inline-block px-4 md:px-6 py-2 rounded-full border border-emerald-500/30 shadow-inner">
+                Học sinh: ??? - Lớp: ???
+            </p>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 mb-6 text-left">
+                <div class="bg-slate-800 p-3 md:p-4 rounded-xl md:rounded-2xl border border-slate-700 text-center shadow">
+                    <p class="text-slate-400 text-[10px] md:text-sm uppercase font-bold mb-1">Điểm số</p>
+                    <p id="res-score" class="text-xl md:text-3xl font-black text-yellow-400 heading-font">0</p>
+                </div>
+                <div class="bg-slate-800 p-3 md:p-4 rounded-xl md:rounded-2xl border border-slate-700 text-center shadow">
+                    <p class="text-slate-400 text-[10px] md:text-sm uppercase font-bold mb-1">Chính xác</p>
+                    <p id="res-correct" class="text-xl md:text-3xl font-black text-emerald-400 heading-font">0/0</p>
+                </div>
+                <div class="bg-slate-800 p-3 md:p-4 rounded-xl md:rounded-2xl border border-slate-700 text-center shadow">
+                    <p class="text-slate-400 text-[10px] md:text-sm uppercase font-bold mb-1">Sinh tồn</p>
+                    <p id="res-lives" class="text-xl md:text-3xl font-black text-red-400 heading-font">0 ❤️</p>
+                </div>
+                <div class="bg-slate-800 p-3 md:p-4 rounded-xl md:rounded-2xl border border-slate-700 text-center shadow">
+                    <p class="text-slate-400 text-[10px] md:text-sm uppercase font-bold mb-1">Chiến dịch</p>
+                    <p id="res-stage" class="text-base md:text-2xl font-black text-indigo-400 heading-font mt-1">Hoàn tất</p>
+                </div>
+            </div>
+
+            <!-- Nơi hiển thị trạng thái lưu điểm cho học sinh biết -->
+            <p id="res-submit-status" class="text-xs md:text-sm font-bold mb-6 min-h-[20px]"></p>
+
+            <div id="review-area" class="text-left mb-6 md:mb-8 max-h-48 md:max-h-60 overflow-y-auto bg-slate-800 p-4 md:p-5 rounded-2xl border border-slate-700 hidden shadow-inner custom-scrollbar">
+                <h3 class="font-bold text-base md:text-lg mb-3 text-red-400 flex items-center gap-2"><span>⚠️</span> Các câu cần ôn tập lại:</h3>
+                <ul id="res-mistakes" class="space-y-4 text-xs md:text-base text-slate-300">
+                </ul>
+            </div>
+            
+            <div class="flex flex-col md:flex-row gap-3 md:gap-4 justify-center">
+                <button onclick="Game.retryGame()" class="btn-3d bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-6 rounded-full shadow-[0_4px_0_rgb(67,56,202)] text-sm md:text-base">🔄 Chơi Lại</button>
+                <button onclick="UIManager.showScreen('library-screen')" id="res-btn-library" class="btn-3d bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-full shadow-[0_4px_0_rgb(51,65,85)] text-sm md:text-base">📚 Chọn Game Khác</button>
+                <button onclick="UIManager.showScreen('home-screen')" id="res-btn-home" class="btn-3d bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 px-6 rounded-full border border-slate-600 shadow-[0_4px_0_rgb(30,41,59)] text-sm md:text-base">🏠 Trang chủ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GLOBAL MODAL -->
+    <div id="custom-modal" class="fixed inset-0 bg-black/80 flex justify-center items-center z-[9999] backdrop-blur-sm hidden-screen">
+        <div class="modal-content bg-slate-800 p-6 md:p-8 rounded-[2rem] border border-slate-600 max-w-sm w-[90%] text-center shadow-2xl">
+            <h3 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 heading-font text-indigo-400 cute-title">Xác Thực Giáo Viên</h3>
+            <p id="modal-msg" class="text-slate-300 mb-6 text-sm md:text-base font-semibold">Vui lòng nhập mật khẩu để truy cập</p>
+            <input type="password" id="modal-input" class="w-full bg-slate-900 border-2 border-slate-600 rounded-xl p-3 text-white outline-none focus:border-indigo-500 mb-6 text-center text-lg md:text-xl tracking-widest font-bold hidden" placeholder="Nhập mật khẩu...">
+            <div id="modal-buttons" class="flex justify-center gap-3">
+            <button id="btn-modal-cancel" class="btn-3d bg-slate-700 hover:bg-slate-600 px-4 py-2.5 rounded-full font-bold text-white shadow-[0_4px_0_rgb(51,65,85)] flex-1 text-sm md:text-base">Hủy</button>
+            <button id="btn-modal-submit" class="btn-3d bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 rounded-full font-bold text-white shadow-[0_4px_0_rgb(67,56,202)] flex-1 text-sm md:text-base">Xác Nhận</button>
+        </div>
+        </div>
+    </div>
+
+<script>
+/**
+ * TIỆN ÍCH HỆ THỐNG
+ */
+const Utils = {
+    generateId: () => '_' + Math.random().toString(36).substr(2, 9),
+    $id: (id) => document.getElementById(id),
+    
+    // Hàm escapeHTML chống lỗi khi gõ dấu nháy kép (")
+    escapeHTML: (str) => {
+        if (!str) return "";
+        return str.toString().replace(/[&<>"']/g, function(m) {
+            switch (m) {
+                case '&': return '&amp;';
+                case '<': return '&lt;';
+                case '>': return '&gt;';
+                case '"': return '&quot;';
+                case "'": return '&#039;';
+                default: return m;
+            }
+        });
+    },
+
+    // Hàm định dạng Hóa học
+    formatText: (str) => {
+        if (!str) return "";
+        return Utils.escapeHTML(str)
+            .replace(/\^([0-9a-zA-Z\+\-]+)/g, '<sup>$1</sup>')
+            .replace(/_([0-9a-zA-Z\+\-]+)/g, '<sub>$1</sub>');
+    },
+
+    showAlert: (title, message, onOk = null) => {
+        Utils.$id('modal-title').innerText = title;
+        Utils.$id('modal-title').className = "text-xl md:text-2xl font-bold mb-4 heading-font text-cyan-400 cute-title";
+        Utils.$id('modal-msg').innerHTML = message;
+        Utils.$id('modal-input').classList.add('hidden');
+        Utils.$id('modal-buttons').innerHTML = `<button id="btn-modal-ok" class="btn-3d bg-cyan-600 hover:bg-cyan-500 px-6 py-2.5 rounded-full font-bold text-white shadow-[0_4px_0_rgb(8,145,178)] w-full text-sm md:text-base">OK, Đã Hiểu</button>`;
+        Utils.$id('custom-modal').classList.remove('hidden-screen');
+        Utils.$id('btn-modal-ok').onclick = () => {
+            Utils.$id('custom-modal').classList.add('hidden-screen');
+            if(onOk) onOk();
+        };
+    },
+    
+    showConfirm: (title, message, onConfirm) => {
+        Utils.$id('modal-title').innerText = title;
+        Utils.$id('modal-title').className = "text-xl md:text-2xl font-bold mb-4 heading-font text-amber-400 cute-title";
+        Utils.$id('modal-msg').innerHTML = message;
+        Utils.$id('modal-input').classList.add('hidden');
+        Utils.$id('modal-buttons').innerHTML = `
+            <button id="btn-modal-cancel" class="btn-3d bg-slate-700 hover:bg-slate-600 px-4 py-2.5 rounded-full font-bold text-white shadow-[0_4px_0_rgb(51,65,85)] flex-1 text-sm md:text-base">Hủy</button>
+            <button id="btn-modal-yes" class="btn-3d bg-red-600 hover:bg-red-500 px-4 py-2.5 rounded-full font-bold text-white shadow-[0_4px_0_rgb(220,38,38)] flex-1 text-sm md:text-base">Xác Nhận</button>
+        `;
+        Utils.$id('custom-modal').classList.remove('hidden-screen');
+        Utils.$id('btn-modal-cancel').onclick = () => Utils.$id('custom-modal').classList.add('hidden-screen');
+        Utils.$id('btn-modal-yes').onclick = () => {
+            Utils.$id('custom-modal').classList.add('hidden-screen');
+            onConfirm();
+        };
+    },
+    
+    showPrompt: (title, message, isPassword, onSubmit) => {
+        Utils.$id('modal-title').innerText = title;
+        Utils.$id('modal-title').className = "text-xl md:text-2xl font-bold mb-4 heading-font text-indigo-400 cute-title";
+        Utils.$id('modal-msg').innerHTML = message;
+        
+        const input = Utils.$id('modal-input');
+        input.classList.remove('hidden');
+        input.type = isPassword ? 'password' : 'text';
+        input.value = '';
+
+        Utils.$id('modal-buttons').innerHTML = `
+            <button id="btn-modal-cancel" class="btn-3d bg-slate-700 hover:bg-slate-600 px-4 py-2.5 rounded-full font-bold text-white shadow-[0_4px_0_rgb(51,65,85)] flex-1 text-sm md:text-base">Hủy</button>
+            <button id="btn-modal-submit" class="btn-3d bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 rounded-full font-bold text-white shadow-[0_4px_0_rgb(67,56,202)] flex-1 text-sm md:text-base">Xác Nhận</button>
+        `;
+        Utils.$id('custom-modal').classList.remove('hidden-screen');
+        
+        Utils.$id('btn-modal-cancel').onclick = () => {
+            Utils.$id('custom-modal').classList.add('hidden-screen');
+            input.classList.add('hidden');
+        };
+        
+        const submitAction = () => {
+            const val = input.value;
+            Utils.$id('custom-modal').classList.add('hidden-screen');
+            input.classList.add('hidden');
+            onSubmit(val);
+        };
+        
+        Utils.$id('btn-modal-submit').onclick = submitAction;
+        input.onkeypress = (e) => { if(e.key === 'Enter') submitAction(); };
+        setTimeout(() => input.focus(), 100);
+    }
+};
+
+/**
+ * QUẢN LÝ GIAO DIỆN
+ */
+const UIManager = {
+    screens: ['home-screen', 'library-screen', 'student-login-screen', 'teacher-screen', 'editor-screen', 'game-screen', 'result-screen'],
+    showScreen: (screenId) => {
+        UIManager.screens.forEach(id => {
+            if(id === screenId) {
+                Utils.$id(id).classList.remove('hidden-screen');
+            } else {
+                Utils.$id(id).classList.add('hidden-screen');
+            }
+        });
+        if(screenId === 'library-screen') TeacherManager.renderLibrary();
+        if(screenId === 'teacher-screen') TeacherManager.renderTeacherList();
+    }
+};
+
+/**
+ * ÂM THANH
+ */
+const AudioManager = {
+    ctx: null, muted: false,
+    init: function() {
+        if (!this.ctx) { const AudioContext = window.AudioContext || window.webkitAudioContext; this.ctx = new AudioContext(); }
+    },
+    toggleMute: function() {
+        this.muted = !this.muted;
+        const txt = this.muted ? "🔇 Tắt" : "🔊 Bật";
+        if(Utils.$id('btn-mute-home')) Utils.$id('btn-mute-home').innerHTML = txt;
+    },
+    playTone: function(freq, type, duration, vol=0.1) {
+        if(this.muted) return; this.init();
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+        const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        gain.gain.setValueAtTime(vol, this.ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+        osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + duration);
+    },
+    shoot: () => AudioManager.playTone(250, 'square', 0.1, 0.03),
+    hit: () => AudioManager.playTone(100, 'sawtooth', 0.2, 0.1),
+    correct: () => { AudioManager.playTone(600, 'sine', 0.1, 0.1); setTimeout(()=>AudioManager.playTone(800, 'sine', 0.2, 0.1), 100); },
+    wrong: () => AudioManager.playTone(200, 'sawtooth', 0.4, 0.1),
+    gameOver: () => AudioManager.playTone(100, 'square', 1, 0.2),
+    bossHit: () => { AudioManager.playTone(80, 'square', 0.3, 0.2); AudioManager.playTone(60, 'sawtooth', 0.4, 0.2); }
+};
+
+/**
+ * DỮ LIỆU GAME (12 câu mặc định)
+ */
+const DataStore = {
+    demoGame: {
+        id: "demo_chem_01",
+        title: "Chiến Dịch Hóa Học 11",
+        subject: "Hóa học", grade: "11",
+        desc: "Vượt qua 4 màn với kiến thức về Nitrogen và Hợp chất.",
+        lives: 5, speed: "normal", sheetUrl: "",
+        stages: {
+            1: { numQ: 3, time: 30, questions: [
+                { id: "q1", text: "Trong không khí, khí nitrogen chiếm tỉ lệ thể tích khoảng bao nhiêu?", a: "21%", b: "78%", c: "1%", d: "50%", ans: "b", exp: "N_2 chiếm ~78% thể tích không khí.", points: 100 },
+                { id: "q2", text: "Chất khí không màu, mùi khai và xốc là?", a: "N_2", b: "O_2", c: "NH_3", d: "HNO_3", ans: "c", exp: "Amonia (NH_3) là khí có mùi khai, xốc đặc trưng.", points: 100 },
+                { id: "q3", text: "Axit nitric (HNO_3) tinh khiết là chất lỏng có màu gì?", a: "Màu vàng", b: "Màu nâu đỏ", c: "Không màu", d: "Màu xanh lục", ans: "c", exp: "HNO_3 tinh khiết không có màu.", points: 100 }
+            ]},
+            2: { numQ: 3, time: 25, questions: [
+                { id: "q4", text: "Số oxi hóa cao nhất của nitrogen trong hợp chất là bao nhiêu?", a: "+3", b: "+4", c: "+5", d: "+6", ans: "c", exp: "N thuộc nhóm VA, số OXH cao nhất là +5.", points: 150 },
+                { id: "q5", text: "Khí N_2 khá trơ về mặt hóa học ở nhiệt độ thường là do nguyên nhân nào?", a: "Có liên kết ba rất bền", b: "Phân tử không phân cực", c: "Độ âm điện lớn", d: "Khối lượng nhỏ", ans: "a", exp: "Liên kết N≡N có năng lượng liên kết lớn nên rất bền.", points: 150 },
+                { id: "q6", text: "Tính chất hóa học đặc trưng của amonia (NH_3) là gì?", a: "Tính axit", b: "Tính oxi hóa mạnh", c: "Tính bazơ yếu và tính khử", d: "Tính lưỡng tính", ans: "c", exp: "Do N có số oxi hóa -3 (thấp nhất) và có cặp e tự do.", points: 150 }
+            ]},
+            3: { numQ: 3, time: 20, questions: [
+                { id: "q7", text: "Muối amoni nào dễ bị nhiệt phân sinh ra khí N_2O?", a: "NH_4NO_3", b: "NH_4NO_2", c: "NH_4Cl", d: "NH_4HCO_3", ans: "a", exp: "NH_4NO_3 t°-> N_2O + 2H_2O", points: 200 },
+                { id: "q8", text: "Để tạo độ xốp cho một số loại bánh, người ta thường dùng muối nào?", a: "(NH_4)_2SO_4", b: "NH_4HCO_3", c: "NH_4NO_3", d: "Na_2CO_3", ans: "b", exp: "Bột nở NH_4HCO_3 dễ bị nhiệt phân tạo ra khí làm xốp bánh.", points: 200 },
+                { id: "q9", text: "Thành phần chính của phân đạm ure là gì?", a: "(NH_4)_2CO_3", b: "(NH_2)_2CO", c: "NH_4NO_3", d: "NH_4Cl", ans: "b", exp: "Ure có công thức (NH_2)_2CO, chứa ~46% nitơ.", points: 200 }
+            ]},
+            4: { numQ: 3, time: 30, questions: [
+                { id: "q10", text: "Kim loại nào bị thụ động hóa trong HNO_3 đặc nguội?", a: "Cu, Ag", b: "Fe, Al, Cr", c: "Mg, Zn", d: "Ca, Ba", ans: "b", exp: "Fe, Al, Cr bị thụ động tạo lớp màng oxit bảo vệ.", points: 300 },
+                { id: "q11", text: "Phản ứng tổng hợp NH_3 từ N_2 và H_2 cần điều kiện gì?", a: "Nhiệt độ thường", b: "Nhiệt độ, xúc tác Fe, áp suất cao", c: "Ánh sáng", d: "Chất xúc tác V_2O_5", ans: "b", exp: "Phản ứng Haber cần điều kiện t°, p cao và xúc tác Fe.", points: 300 },
+                { id: "q12", text: "Hiện tượng phú dưỡng xảy ra ở ao hồ là do sự dư thừa của các nguyên tố nào?", a: "C, O", b: "N, P", c: "S, Cl", d: "Fe, Cu", ans: "b", exp: "Dư thừa N, P từ nước thải, phân bón gây bùng phát tảo.", points: 300 }
+            ]}
+        }
+    },
+    getGames: () => {
+        try {
+            const data = localStorage.getItem('ZomEduGames');
+            if (data) {
+                let games = JSON.parse(data);
+                // Migration to new stage structure if old format
+                games = games.map(g => {
+                    if (g.questions && !g.stages) {
+                        const total = g.questions.length;
+                        const q1 = Math.max(1, Math.floor(total * 0.2));
+                        const q2 = Math.max(1, Math.floor((total - q1) * 0.3));
+                        const q3 = Math.max(1, Math.floor((total - q1 - q2) * 0.4));
+                        g.stages = {
+                            1: { numQ: q1, time: 30, questions: g.questions.slice(0, q1) },
+                            2: { numQ: q2, time: 25, questions: g.questions.slice(q1, q1 + q2) },
+                            3: { numQ: q3, time: 20, questions: g.questions.slice(q1 + q2, q1 + q2 + q3) },
+                            4: { numQ: Math.max(1, total - q1 - q2 - q3), time: 30, questions: g.questions.slice(q1 + q2 + q3) }
+                        };
+                        delete g.questions;
+                    }
+                    return g;
+                });
+                return games;
+            }
+        } catch(e) {}
+        return [DataStore.demoGame];
+    },
+    saveGames: (games) => {
+        localStorage.setItem('ZomEduGames', JSON.stringify(games));
+    }
+};
+
+/**
+ * QUẢN TRỊ GIÁO VIÊN
+ */
+const TeacherManager = {
+    currentGame: null,
+    currentTab: 1,
+    
+    checkTeacherAccess: () => {
+        Utils.showPrompt("Xác Thực Giáo Viên", "Vui lòng nhập mật khẩu để truy cập", true, (pwd) => {
+            // Tối ưu Bảo mật: Mã hóa mật khẩu bằng Base64 thay vì văn bản thô
+            // "1234" được mã hóa thành "MTIzNA=="
+            if(btoa(pwd) === "MTIzNA==") UIManager.showScreen('teacher-screen');
+            else Utils.showAlert("Từ chối", "Mật khẩu không chính xác!");
+        });
+    },
+
+    renderLibrary: () => {
+        const games = DataStore.getGames();
+        const container = Utils.$id('game-list');
+        container.innerHTML = '';
+        games.forEach(g => {
+            const totalQs = Object.values(g.stages).reduce((sum, st) => sum + st.questions.length, 0);
+            container.innerHTML += `
+                <div class="bg-slate-800 rounded-2xl border border-slate-700 p-5 hover:border-emerald-500 transition shadow-lg flex flex-col h-full">
+                    <h3 class="text-xl font-bold text-white mb-2 line-clamp-1 heading-font">${g.title}</h3>
+                    <div class="flex flex-wrap gap-2 text-xs font-bold mb-4">
+                        <span class="bg-indigo-900/50 text-indigo-300 border border-indigo-700/50 px-2 py-1 rounded-md">${g.subject} - Lớp ${g.grade}</span>
+                        <span class="bg-emerald-900/50 text-emerald-400 border border-emerald-700/50 px-2 py-1 rounded-md">Kho: ${totalQs} Câu</span>
+                    </div>
+                    <p class="text-sm text-slate-400 mb-6 line-clamp-3 flex-1 font-medium">${g.desc}</p>
+                    <button onclick="Game.prepareLogin('${g.id}')" class="btn-3d w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold py-3 rounded-full mt-auto shadow-[0_4px_0_rgb(4,120,87)]">
+                        ▶ CHƠI GAME NÀY
+                    </button>
+                </div>
+            `;
+        });
+    },
+
+    renderTeacherList: () => {
+        const games = DataStore.getGames();
+        const tbody = Utils.$id('teacher-game-list');
+        tbody.innerHTML = '';
+        games.forEach(g => {
+            const totalQs = Object.values(g.stages).reduce((sum, st) => sum + st.questions.length, 0);
+            tbody.innerHTML += `
+                <tr class="border-b border-slate-700 hover:bg-slate-800 transition">
+                    <td class="p-4">
+                        <div class="font-bold text-indigo-300">${g.title}</div>
+                        <div class="text-xs text-slate-500">${g.desc.substring(0, 40)}...</div>
+                    </td>
+                    <td class="p-4 text-slate-300 font-semibold">${g.subject} - Lớp ${g.grade}</td>
+                    <td class="p-4 text-center font-black text-emerald-400">${totalQs}</td>
+                    <td class="p-4 text-right flex justify-end gap-2">
+                        <button onclick="TeacherManager.exportGameFromList('${g.id}')" class="btn-3d bg-cyan-600 hover:bg-cyan-500 px-3 py-1.5 rounded-full text-xs md:text-sm text-white font-bold shadow-[0_3px_0_rgb(8,145,178)]" title="Xuất file HTML độc lập">Xuất HTML</button>
+                        <button onclick="TeacherManager.editGame('${g.id}')" class="btn-3d bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-full text-xs md:text-sm text-white font-bold shadow-[0_3px_0_rgb(67,56,202)]">Sửa</button>
+                        <button onclick="TeacherManager.deleteGame('${g.id}')" class="btn-3d bg-red-600 hover:bg-red-500 px-3 py-1.5 rounded-full text-xs md:text-sm text-white font-bold shadow-[0_3px_0_rgb(220,38,38)]">Xóa</button>
+                    </td>
+                </tr>
+            `;
+        });
+    },
+
+    createNewGame: () => {
+        TeacherManager.currentGame = {
+            id: 'g_' + Utils.generateId(),
+            title: "Game Mới", subject: "", grade: "", desc: "", lives: 5, speed: "normal", sheetUrl: "",
+            stages: {
+                1: { numQ: 3, time: 30, questions: [] },
+                2: { numQ: 3, time: 25, questions: [] },
+                3: { numQ: 3, time: 20, questions: [] },
+                4: { numQ: 3, time: 30, questions: [] }
+            }
+        };
+        TeacherManager.currentTab = 1;
+        TeacherManager.loadToEditor();
+    },
+
+    editGame: (id) => {
+        const games = DataStore.getGames();
+        TeacherManager.currentGame = JSON.parse(JSON.stringify(games.find(g => g.id === id)));
+        TeacherManager.currentTab = 1;
+        TeacherManager.loadToEditor();
+    },
+
+    deleteGame: (id) => {
+        Utils.showConfirm("Xóa Game?", "Bạn có chắc chắn muốn xóa bài học này không?", () => {
+            let games = DataStore.getGames();
+            games = games.filter(g => g.id !== id);
+            DataStore.saveGames(games);
+            TeacherManager.renderTeacherList();
+        });
+    },
+
+    loadToEditor: () => {
+        const g = TeacherManager.currentGame;
+        Utils.$id('edit-title').value = g.title || ""; 
+        Utils.$id('edit-subject').value = g.subject || "";
+        Utils.$id('edit-grade').value = g.grade || ""; 
+        Utils.$id('edit-desc').value = g.desc || "";
+        Utils.$id('edit-lives').value = g.lives || 5; 
+        Utils.$id('edit-speed').value = g.speed || "normal";
+        if(Utils.$id('edit-sheet-url')) Utils.$id('edit-sheet-url').value = g.sheetUrl || "";
+        
+        TeacherManager.switchTab(1);
+        UIManager.showScreen('editor-screen');
+    },
+
+    extractCurrentTabQuestions: () => {
+        if (!TeacherManager.currentGame || !TeacherManager.currentGame.stages) return;
+        const st = TeacherManager.currentGame.stages[TeacherManager.currentTab];
+        st.numQ = parseInt(Utils.$id('stage-num-q').value) || 3;
+        st.time = parseInt(Utils.$id('stage-time-q').value) || 30;
+        
+        const qDivs = document.querySelectorAll('.q-item');
+        st.questions = [];
+        qDivs.forEach((div) => {
+            st.questions.push({
+                id: div.dataset.id, text: div.querySelector('.q-text').value.trim(),
+                a: div.querySelector('.q-opt-a').value.trim(), b: div.querySelector('.q-opt-b').value.trim(),
+                c: div.querySelector('.q-opt-c').value.trim(), d: div.querySelector('.q-opt-d').value.trim(),
+                ans: div.querySelector('.q-ans').value, exp: div.querySelector('.q-exp').value.trim(),
+                points: parseInt(div.querySelector('.q-points').value) || 100,
+                time: parseInt(div.querySelector('.q-time').value) || null
+            });
+        });
+    },
+
+    switchTab: (tabId) => {
+        if (Utils.$id('questions-list').innerHTML.trim() !== '') {
+            TeacherManager.extractCurrentTabQuestions();
+        }
+        
+        TeacherManager.currentTab = tabId;
+        
+        for(let i=1; i<=4; i++) {
+            const btn = Utils.$id('tab-btn-' + i);
+            if(i === tabId) {
+                btn.className = "px-4 py-2 rounded-t-lg bg-indigo-600 font-bold text-white transition";
+            } else {
+                btn.className = "px-4 py-2 rounded-t-lg bg-slate-700 hover:bg-slate-600 font-bold text-slate-300 transition";
+            }
+        }
+        TeacherManager.renderQuestionsEditor();
+    },
+
+    saveCurrentGame: (silent = false) => {
+        TeacherManager.extractCurrentTabQuestions();
+        
+        const g = TeacherManager.currentGame;
+        g.title = Utils.$id('edit-title').value || "Game Không Tên";
+        g.subject = Utils.$id('edit-subject').value; g.grade = Utils.$id('edit-grade').value;
+        g.desc = Utils.$id('edit-desc').value; g.lives = parseInt(Utils.$id('edit-lives').value) || 5;
+        g.speed = Utils.$id('edit-speed').value;
+        if(Utils.$id('edit-sheet-url')) g.sheetUrl = Utils.$id('edit-sheet-url').value.trim();
+        
+        let hasError = false;
+        for (let i = 1; i <= 4; i++) {
+            const st = g.stages[i];
+            if (st.questions.length < st.numQ) {
+                if(!silent) Utils.showAlert("Thiếu câu hỏi", `Màn ${i} cài đặt bốc ${st.numQ} câu nhưng ngân hàng hiện tại chỉ có ${st.questions.length} câu. Vui lòng thêm câu hỏi hoặc giảm số câu cần bốc ở Màn ${i}!`);
+                return false;
+            }
+            st.questions.forEach(q => {
+                if(!q.text || !q.a || !q.b || !q.c || !q.d || !q.ans) hasError = true;
+            });
+        }
+
+        if(hasError) { if(!silent) Utils.showAlert("Lỗi", "Vui lòng điền đủ nội dung các câu hỏi (không được bỏ trống)."); return false; }
+
+        let games = DataStore.getGames();
+        const idx = games.findIndex(x => x.id === g.id);
+        if(idx >= 0) games[idx] = g; else games.push(g);
+        DataStore.saveGames(games);
+        
+        if(!silent) Utils.showAlert("Thành công", "Đã lưu bộ câu hỏi thành công!", () => UIManager.showScreen('teacher-screen'));
+        return true;
+    },
+
+    renderQuestionsEditor: () => {
+        const st = TeacherManager.currentGame.stages[TeacherManager.currentTab];
+        Utils.$id('stage-num-q').value = st.numQ;
+        Utils.$id('stage-time-q').value = st.time;
+        Utils.$id('q-count').innerText = st.questions.length;
+        
+        const container = Utils.$id('questions-list');
+        container.innerHTML = '';
+        st.questions.forEach((q, index) => {
+            container.innerHTML += TeacherManager.buildQuestionHTML(q, index + 1);
+        });
+    },
+
+    buildQuestionHTML: (q, index) => {
+        return `
+            <div class="q-item bg-slate-900 p-4 rounded-xl border border-slate-700 relative shadow-sm" data-id="${q.id}">
+                <div class="absolute top-3 right-3 flex gap-2">
+                    <button onclick="TeacherManager.removeQuestion('${q.id}')" class="text-red-400 hover:text-red-300 bg-red-900/30 p-2 rounded-lg transition">🗑️ Xóa</button>
+                </div>
+                <div class="font-bold text-indigo-400 mb-3 bg-slate-800 inline-block px-3 py-1 rounded-lg text-sm border border-slate-700">Câu ${index}</div>
+                <textarea class="q-text w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-white mb-3 outline-none focus:border-indigo-500 transition resize-none font-medium" rows="2" placeholder="Nội dung câu hỏi...">${Utils.escapeHTML(q.text)}</textarea>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    <div class="flex items-center gap-2 bg-slate-800 p-2 rounded-lg border border-slate-700"><span class="w-6 font-black text-red-500 text-center text-lg">A</span><input type="text" class="q-opt-a flex-1 bg-transparent text-white text-sm outline-none font-medium" value="${Utils.escapeHTML(q.a)}"></div>
+                    <div class="flex items-center gap-2 bg-slate-800 p-2 rounded-lg border border-slate-700"><span class="w-6 font-black text-blue-500 text-center text-lg">B</span><input type="text" class="q-opt-b flex-1 bg-transparent text-white text-sm outline-none font-medium" value="${Utils.escapeHTML(q.b)}"></div>
+                    <div class="flex items-center gap-2 bg-slate-800 p-2 rounded-lg border border-slate-700"><span class="w-6 font-black text-emerald-500 text-center text-lg">C</span><input type="text" class="q-opt-c flex-1 bg-transparent text-white text-sm outline-none font-medium" value="${Utils.escapeHTML(q.c)}"></div>
+                    <div class="flex items-center gap-2 bg-slate-800 p-2 rounded-lg border border-slate-700"><span class="w-6 font-black text-amber-500 text-center text-lg">D</span><input type="text" class="q-opt-d flex-1 bg-transparent text-white text-sm outline-none font-medium" value="${Utils.escapeHTML(q.d)}"></div>
+                </div>
+                
+                <div class="flex flex-col md:flex-row md:items-center gap-4 mt-4 bg-slate-800/50 p-3 rounded-lg border border-slate-700/50">
+                    <div class="flex items-center gap-2 whitespace-nowrap">
+                        <label class="text-sm font-bold text-slate-300">ĐÁP ÁN ĐÚNG:</label>
+                        <select class="q-ans bg-slate-700 border border-slate-600 rounded-lg p-1.5 text-white outline-none font-black text-lg">
+                            <option value="a" ${q.ans==='a'?'selected':''} class="text-red-400">A</option>
+                            <option value="b" ${q.ans==='b'?'selected':''} class="text-blue-400">B</option>
+                            <option value="c" ${q.ans==='c'?'selected':''} class="text-emerald-400">C</option>
+                            <option value="d" ${q.ans==='d'?'selected':''} class="text-amber-400">D</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2 whitespace-nowrap">
+                        <label class="text-sm font-bold text-slate-300">ĐIỂM:</label>
+                        <input type="number" class="q-points w-20 bg-slate-700 border border-slate-600 rounded-lg p-1.5 text-white outline-none font-bold text-center" value="${q.points !== undefined ? q.points : 100}" min="0">
+                    </div>
+                    <div class="flex items-center gap-2 whitespace-nowrap">
+                        <label class="text-sm font-bold text-slate-300" title="Để trống sẽ lấy theo thời gian của màn">THỜI GIAN (s):</label>
+                        <input type="number" class="q-time w-20 bg-slate-700 border border-slate-600 rounded-lg p-1.5 text-white outline-none font-bold text-center" placeholder="Theo Màn" value="${q.time || ''}" min="5">
+                    </div>
+                    <input type="text" class="q-exp w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-slate-300 text-sm outline-none focus:border-indigo-500 font-medium" placeholder="Giải thích ngắn gọn (Không bắt buộc)" value="${Utils.escapeHTML(q.exp || '')}">
+                </div>
+            </div>
+        `;
+    },
+
+    addNewQuestion: () => {
+        TeacherManager.extractCurrentTabQuestions();
+        TeacherManager.currentGame.stages[TeacherManager.currentTab].questions.push({ id: 'q_' + Utils.generateId(), text: "", a: "", b: "", c: "", d: "", ans: "a", exp: "", points: 100, time: null });
+        TeacherManager.renderQuestionsEditor();
+        const container = Utils.$id('questions-list');
+        setTimeout(() => container.scrollTop = container.scrollHeight, 10);
+    },
+
+    removeQuestion: (id) => {
+        Utils.showConfirm("Xóa câu hỏi", "Xóa câu hỏi này?", () => {
+            TeacherManager.extractCurrentTabQuestions();
+            TeacherManager.currentGame.stages[TeacherManager.currentTab].questions = TeacherManager.currentGame.stages[TeacherManager.currentTab].questions.filter(q => q.id !== id);
+            TeacherManager.renderQuestionsEditor();
+        });
+    },
+    
+    importQuestions: (e) => {
+        const file = e.target.files[0]; if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                TeacherManager.extractCurrentTabQuestions();
+                const data = JSON.parse(event.target.result);
+                if(Array.isArray(data)) {
+                    data.forEach(q => { if(q.text && q.a && q.b && q.c && q.d && q.ans) { q.id = 'q_' + Utils.generateId(); TeacherManager.currentGame.stages[TeacherManager.currentTab].questions.push(q); } });
+                } else if(data['1'] && data['2']) {
+                    for(let i=1; i<=4; i++) {
+                        if(data[i] && data[i].questions) {
+                            TeacherManager.currentGame.stages[i].questions = data[i].questions.map(q => ({...q, id: 'q_' + Utils.generateId()}));
+                            if(data[i].numQ) TeacherManager.currentGame.stages[i].numQ = data[i].numQ;
+                            if(data[i].time) TeacherManager.currentGame.stages[i].time = data[i].time;
+                        }
+                    }
+                }
+                TeacherManager.renderQuestionsEditor();
+                Utils.showAlert("Thành công", `Đã nhập dữ liệu thành công!`);
+            } catch (err) { Utils.showAlert("Lỗi", "File bị hỏng hoặc không đúng định dạng."); }
+        };
+        reader.readAsText(file); e.target.value = '';
+    },
+    exportJSON: () => {
+        TeacherManager.extractCurrentTabQuestions();
+        const exportData = TeacherManager.currentGame.stages;
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = `NganHang_${TeacherManager.currentGame.title.replace(/ /g, '_')}.json`;
+        a.click(); URL.revokeObjectURL(url);
+    },
+
+    exportStandaloneHTML: () => {
+        if(!TeacherManager.saveCurrentGame(true)) return; // Lưu ngầm, không hiện popup
+        TeacherManager.doExport(TeacherManager.currentGame);
+    },
+    
+    exportGameFromList: (id) => {
+        const games = DataStore.getGames();
+        const g = games.find(x => x.id === id);
+        if(g) TeacherManager.doExport(g);
+    },
+    
+    doExport: (g) => {
+        const injectData = JSON.stringify(g);
+        const htmlContent = document.documentElement.outerHTML;
+        // Chèn script vào cuối thẻ head
+        const scriptTag = `\n<script>\nwindow.__EXPORTED_GAME_DATA__ = ${injectData};\n<\/script>\n`;
+        const finalHtml = htmlContent.replace('</head>', scriptTag + '</head>');
+
+        const blob = new Blob([finalHtml], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Game_${g.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+};
+
+/**
+ * ENGINE GAME CANVAS 2D & LOGIC CHÍNH
+ */
+const Game = {
+    canvas: null, ctx: null,
+    isRunning: false, isPaused: false,
+    
+    playerInfo: { name: '', className: '' },
+    selectedGameId: null,
+    config: null, currentStageQuestions: [], stageQIndex: 0,
+    score: 0, lives: 5, mistakes: [],
+    
+    timeLeft: 0, // Đếm ngược
+    TIME_PER_Q: 30,
+
+    currentStage: 1, 
+    totalGameQuestions: 0, globalQIndex: 0, correctCount: 0,
+    bossMaxHp: 0, bossHp: 0, bossHitTimer: 0, bossDeadAnim: 0,
+    isGameOverAnim: false,
+
+    // Cài đặt bẫy ngầm và phần thưởng ngẫu nhiên
+    rewardIndices: [],
+    penaltyMap: {},
+
+    player: { x: 0, y: 0, angle: -Math.PI/2, recoil: 0 },
+    bullets: [], zombies: [], particles: [], floatingTexts: [],
+    mouse: { x: 0, y: 0 }, lastTime: 0,
+
+    init: () => {
+        Game.canvas = Utils.$id('gameCanvas'); Game.ctx = Game.canvas.getContext('2d');
+        window.addEventListener('resize', Game.resize);
+        
+        window.addEventListener('mousemove', (e) => {
+            if(!Game.isRunning || Game.isPaused) return;
+            const rect = Game.canvas.getBoundingClientRect();
+            Game.mouse.x = e.clientX - rect.left; Game.mouse.y = e.clientY - rect.top;
+        });
+        window.addEventListener('mousedown', (e) => {
+            if (e.target.closest('button')) return;
+            Game.handleShoot();
+        });
+        window.addEventListener('touchmove', (e) => {
+            if(!Game.isRunning || Game.isPaused) return;
+            if (e.target.closest('.screen') && e.target.closest('.screen').id !== 'game-screen') return; 
+            if (e.target.closest('button')) return;
+            const rect = Game.canvas.getBoundingClientRect();
+            Game.mouse.x = e.touches[0].clientX - rect.left; Game.mouse.y = e.touches[0].clientY - rect.top;
+        }, {passive: false});
+        window.addEventListener('touchstart', (e) => {
+            if(!Game.isRunning || Game.isPaused) return;
+            if (e.target.closest('.screen') && e.target.closest('.screen').id !== 'game-screen') return;
+            if (e.target.closest('button')) return;
+            const rect = Game.canvas.getBoundingClientRect();
+            Game.mouse.x = e.touches[0].clientX - rect.left; Game.mouse.y = e.touches[0].clientY - rect.top;
+            Game.handleShoot();
+        }, {passive: false});
+    },
+
+    resize: () => {
+        if(!Game.canvas) return;
+        Game.canvas.width = window.innerWidth; Game.canvas.height = window.innerHeight;
+        
+        // Căn cứ nằm bên trái (Hạ thấp tọa độ Y để không bị che khuất)
+        Game.player.x = 80; 
+        Game.player.y = Math.min(Game.canvas.height * 0.75, Game.canvas.height - 50); 
+    },
+    
+    prepareLogin: (gameId) => {
+        Game.selectedGameId = gameId;
+        Utils.$id('student-name').value = ''; Utils.$id('student-class').value = '';
+        UIManager.showScreen('student-login-screen');
+    },
+    
+    submitLogin: () => {
+        const name = Utils.$id('student-name').value.trim();
+        const cls = Utils.$id('student-class').value.trim();
+        if(!name || !cls) {
+            Utils.showAlert("Thiếu thông tin", "Em vui lòng nhập đầy đủ Họ Tên và Lớp nhé!");
+            return;
+        }
+        Game.playerInfo.name = name;
+        Game.playerInfo.className = cls;
+        
+        let gameData = Game.config; // Nếu đã export
+        if(!gameData) {
+            const games = DataStore.getGames();
+            gameData = games.find(g => g.id === Game.selectedGameId);
+        }
+        Game.startGame(gameData);
+    },
+
+    startGame: (gameData) => {
+        if(!gameData || !gameData.stages) return Utils.showAlert("Lỗi", "Dữ liệu game không hợp lệ!");
+
+        Game.config = gameData;
+        Game.score = 0; Game.lives = gameData.lives || 5; Game.mistakes = [];
+        
+        Game.totalGameQuestions = Object.values(gameData.stages).reduce((sum, st) => sum + st.numQ, 0);
+        Game.globalQIndex = 0;
+        Game.correctCount = 0;
+        
+        // TẠO NGẪU NHIÊN CÁC PHẦN THƯỞNG TIM VÀ TRỪ ĐIỂM BÍ MẬT
+        Game.rewardIndices = [];
+        Game.penaltyMap = {};
+        
+        let allIndices = Array.from({length: Game.totalGameQuestions}, (_, i) => i);
+        // Trộn ngẫu nhiên danh sách các câu hỏi
+        for (let i = allIndices.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [allIndices[i], allIndices[j]] = [allIndices[j], allIndices[i]];
+        }
+        
+        // Cần đảm bảo game có ít nhất đủ số lượng câu hỏi để rải phần thưởng/bẫy
+        if (allIndices.length >= 7) {
+            // 2 câu hỏi ngẫu nhiên sẽ có thưởng +1 Tim khi trả lời đúng
+            Game.rewardIndices = allIndices.slice(0, 2); 
+            
+            // 5 câu hỏi ngẫu nhiên sẽ có bẫy trừ điểm khi trả lời sai
+            const penaltyValues = [10, 20, 50, 200, 300];
+            for(let i=0; i<5; i++) {
+                Game.penaltyMap[allIndices[2 + i]] = penaltyValues[i];
+            }
+        } else {
+            // Nếu game quá ngắn (ít hơn 7 câu), chỉ lấy 1 phần thưởng tim
+            if (allIndices.length > 0) Game.rewardIndices = [allIndices[0]];
+        }
+
+        Game.isGameOverAnim = false;
+        
+        Game.bossMaxHp = 0; Game.bossHp = 0; Game.bossHitTimer = 0; Game.bossDeadAnim = 0;
+        Game.bullets = []; Game.zombies = []; Game.particles = []; Game.floatingTexts = [];
+
+        Game.stars = [];
+        for(let i=0; i<150; i++) {
+            Game.stars.push({
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+                size: Math.random() * 1.5 + 0.5,
+                blinkSpeed: Math.random() * 0.003 + 0.001,
+                offset: Math.random() * Math.PI * 2
+            });
+        }
+
+        UIManager.showScreen('game-screen');
+        Utils.$id('game-overlay').classList.add('hidden-screen'); Utils.$id('stage-transition').classList.add('hidden-screen');
+        Game.resize();
+        
+        Game.prepareStage(1);
+        
+        Game.isRunning = true; Game.isPaused = false;
+        Game.lastTime = performance.now();
+        requestAnimationFrame(Game.loop);
+    },
+    
+    prepareStage: (stageNum) => {
+        Game.currentStage = stageNum;
+        const stageConfig = Game.config.stages[stageNum];
+        Game.TIME_PER_Q = stageConfig.time || 30;
+        
+        // Shuffle the bank and pick N questions
+        const pool = [...stageConfig.questions].sort(() => Math.random() - 0.5);
+        Game.currentStageQuestions = pool.slice(0, stageConfig.numQ);
+        
+        Game.stageQIndex = 0;
+        Game.loadQuestion();
+    },
+
+    updateHUD: () => {
+        Utils.$id('hud-score').innerText = Game.score;
+        Utils.$id('hud-lives').innerText = Game.lives;
+        const progressStr = `${Game.globalQIndex + 1}/${Game.totalGameQuestions}`;
+        Utils.$id('hud-progress').innerText = progressStr;
+        Utils.$id('hud-progress-mobile').innerText = progressStr;
+        Utils.$id('hud-timer').innerText = Math.ceil(Game.timeLeft) + 's';
+        
+        // Cảnh báo màu đỏ nếu sắp hết giờ
+        const timerUI = Utils.$id('hud-timer').parentElement;
+        if(Game.timeLeft <= 5) { timerUI.className = "text-white font-bold heading-font text-sm md:text-xl hud-text flex items-center gap-1 bg-red-600 px-2 py-0.5 md:px-3 md:py-1 rounded-full border border-red-400 animate-pulse"; }
+        else { timerUI.className = "text-white font-bold heading-font text-sm md:text-xl hud-text flex items-center gap-1 bg-blue-900/80 px-2 py-0.5 md:px-3 md:py-1 rounded-full border border-blue-500/50"; }
+        
+        for(let i=1; i<=4; i++) {
+            const el = Utils.$id('st-' + i);
+            if(el) {
+                if(i < Game.currentStage) el.className = "text-emerald-400 font-bold hidden md:inline";
+                else if(i === Game.currentStage) el.className = "text-yellow-400 font-black drop-shadow-md hidden md:inline";
+                else el.className = "text-slate-600 font-normal hidden md:inline";
+            }
+        }
+    },
+
+    loadQuestion: () => {
+        if(Game.stageQIndex >= Game.currentStageQuestions.length) return;
+        
+        const q = Game.currentStageQuestions[Game.stageQIndex];
+        Game.timeLeft = q.time ? q.time : Game.TIME_PER_Q; // Reset timer (Ưu tiên thời gian riêng của câu hỏi)
+        Utils.$id('ingame-question').innerHTML = Utils.formatText(q.text);
+        
+        // Random vị trí đáp án mới
+        const opts = [ { key: 'a', val: q.a }, { key: 'b', val: q.b }, { key: 'c', val: q.c }, { key: 'd', val: q.d } ];
+        opts.sort(() => Math.random() - 0.5);
+        Utils.$id('ingame-optA').innerHTML = Utils.formatText(opts[0].val); 
+        Utils.$id('ingame-optB').innerHTML = Utils.formatText(opts[1].val);
+        Utils.$id('ingame-optC').innerHTML = Utils.formatText(opts[2].val); 
+        Utils.$id('ingame-optD').innerHTML = Utils.formatText(opts[3].val);
+        
+        Game.currentCorrectOpt = opts.find(o => o.key === q.ans).key === opts[0].key ? 'a' : opts.find(o => o.key === q.ans).key === opts[1].key ? 'b' : opts.find(o => o.key === q.ans).key === opts[2].key ? 'c' : 'd';
+        
+        Game.zombies = []; Game.spawnZombies();
+        Game.updateHUD();
+    },
+
+    spawnZombies: () => {
+        const options = ['a', 'b', 'c', 'd']; options.sort(() => Math.random() - 0.5);
+        
+        // Tính toán chia không gian theo chiều dọc để zombie chạy từ Phải sang Trái
+        // Tránh bị đè lấp bởi HUD bên trên
+        const hudHeightOffset = window.innerWidth < 900 ? 100 : 180;
+        const startY = Math.max(hudHeightOffset, Game.canvas.height * 0.4);
+        const usableHeight = Game.canvas.height - startY - 20; 
+        const spacing = usableHeight / 4;
+        
+        let speedMult = 1, zType = 'normal', spawnX = Game.canvas.width + 100;
+        
+        if (Game.currentStage === 1) { speedMult = 0.6; zType = 'normal'; }
+        else if (Game.currentStage === 2) { speedMult = 1.0; zType = 'fast'; }
+        else if (Game.currentStage === 3) { speedMult = 1.3; zType = 'armored'; }
+        else if (Game.currentStage === 4) {
+            speedMult = 1.1; zType = 'minion'; spawnX = Game.canvas.width - 50; 
+            if(Game.bossMaxHp === 0) { 
+                Game.bossMaxHp = Game.config.stages[4].numQ; 
+                Game.bossHp = Game.bossMaxHp; 
+            }
+        }
+        
+        if(Game.config.speed === 'fast') speedMult *= 1.3;
+        if(Game.config.speed === 'slow') speedMult *= 0.8;
+
+        options.forEach((opt, i) => {
+            Game.zombies.push({
+                id: Math.random(),
+                x: spawnX + Math.random() * 80, // Xuất hiện bên Phải
+                targetY: startY + spacing * i + spacing / 2, 
+                y: startY + spacing * i + spacing / 2,
+                width: 50, height: 90, speed: (40 + Math.random() * 20) * speedMult,
+                opt: opt, type: zType, wobbleOffset: Math.random() * Math.PI * 2,
+                color: opt==='a'?'#EF4444':opt==='b'?'#3B82F6':opt==='c'?'#10B981':'#F59E0B',
+                label: opt.toUpperCase(), isDead: false
+            });
+        });
+    },
+
+    createExplosion: (x, y, color, amount = 15) => {
+        for (let i = 0; i < amount; i++) {
+            Game.particles.push({
+                x: x, y: y,
+                vx: (Math.random() - 0.5) * 400,
+                vy: (Math.random() - 0.5) * 400,
+                life: 1.0,
+                size: Math.random() * 4 + 2,
+                color: color
+            });
+        }
+    },
+
+    addFloatingText: (x, y, text, color) => {
+        Game.floatingTexts.push({
+            x: x, y: y,
+            vy: -50,
+            life: 1.5,
+            text: text,
+            color: color
+        });
+    },
+    
+    checkStageProgress: () => {
+        const stageConfig = Game.config.stages[Game.currentStage];
+        if (Game.stageQIndex >= stageConfig.numQ) {
+            if (Game.currentStage === 4) {
+                Game.bossHp = 0; Game.bossDeadAnim = 1; AudioManager.bossHit();
+                Game.createExplosion(Game.canvas.width - 150, Game.canvas.height / 2, '#F59E0B', 50);
+                Game.addFloatingText(Game.canvas.width - 150, Game.canvas.height / 2 - 100, "TRÙM BỊ TIÊU DIỆT!", "#F59E0B");
+                setTimeout(Game.winGame, 2000);
+            } else Game.showStageTransition();
+        } else Game.loadQuestion();
+    },
+    
+    showStageTransition: () => {
+        Game.isPaused = true;
+        const overlay = Utils.$id('stage-transition');
+        Utils.$id('st-title').innerText = `HOÀN THÀNH MÀN ${Game.currentStage}`;
+        let msg = "Làn sóng tiếp theo đang đến!";
+        if(Game.currentStage === 1) msg = "Chuẩn bị tăng tốc!";
+        if(Game.currentStage === 2) msg = "Cảnh báo! Zombie Giáp Sắt xuất hiện!";
+        else if(Game.currentStage === 3) msg = "ĐỐI MẶT VỚI ĐẠI ZOMBIE!";
+        Utils.$id('st-desc').innerText = msg;
+        overlay.classList.remove('hidden-screen'); AudioManager.correct(); 
+    },
+    
+    startNextStage: () => {
+        Utils.$id('stage-transition').classList.add('hidden-screen');
+        Game.zombies = []; Game.bullets = [];
+        Game.prepareStage(Game.currentStage + 1);
+        Game.isPaused = false; Game.lastTime = performance.now(); requestAnimationFrame(Game.loop);
+    },
+
+    handleShoot: () => {
+        if(!Game.isRunning || Game.isPaused || Game.isGameOverAnim) return;
+        Game.player.angle = Math.atan2(Game.mouse.y - Game.player.y, Game.mouse.x - Game.player.x);
+        const dx = Game.mouse.x - Game.player.x; const dy = Game.mouse.y - Game.player.y;
+        const dist = Math.hypot(dx, dy); if (dist === 0) return;
+        const dirX = dx / dist; const dirY = dy / dist;
+        
+        Game.bullets.push({ x: Game.player.x + dirX * 40, y: Game.player.y + dirY * 40, vx: dirX * 1500, vy: dirY * 1500, radius: 6, active: true });
+        Game.player.recoil = 15; AudioManager.shoot();
+    },
+
+    handleTimeout: () => {
+        AudioManager.wrong(); Game.lives--;
+        Game.createExplosion(Game.canvas.width/2, Game.canvas.height/2, '#EF4444', 30);
+        Game.addFloatingText(Game.canvas.width/2, Game.canvas.height/2, "HẾT GIỜ! (-1 ❤️)", "#EF4444");
+        
+        const q = Game.currentStageQuestions[Game.stageQIndex];
+        const correctOpt = typeof Game.currentCorrectOpt !== 'undefined' ? Game.currentCorrectOpt : q.ans;
+        Game.mistakes.push({ q: q.text, correct: correctOpt, exp: q.exp });
+        
+        Game.zombies.forEach(z => { z.isDead = true; Game.createExplosion(z.x, z.y, z.color, 5); });
+        Game.updateHUD();
+        
+        if(Game.lives <= 0) {
+            Game.triggerHordeAnim();
+        } else {
+            Game.stageQIndex++; Game.globalQIndex++;
+            setTimeout(() => { if(Game.isRunning) Game.checkStageProgress(); }, 1500);
+        }
+    },
+
+    checkAnswer: (z) => {
+        if (z.isDead) return;
+        
+        const q = Game.currentStageQuestions[Game.stageQIndex];
+        let isCorrect = false;
+        if (typeof Game.currentCorrectOpt !== 'undefined') {
+            isCorrect = (z.opt === Game.currentCorrectOpt);
+        } else {
+            isCorrect = (z.opt === q.ans);
+        }
+        
+        if(isCorrect) {
+            z.isDead = true;
+            AudioManager.correct(); Game.correctCount++;
+            
+            // Xóa bỏ điểm thưởng thời gian, cộng điểm chuẩn xác theo cài đặt
+            const points = q.points !== undefined ? parseInt(q.points) : (100 * Game.currentStage);
+            Game.score += points;
+            
+            // KIỂM TRA THƯỞNG TIM BÍ MẬT
+            let bonusText = "";
+            if (Game.rewardIndices && Game.rewardIndices.includes(Game.globalQIndex)) {
+                Game.lives++;
+                bonusText = " & +1 ❤️";
+                // Lọc bỏ để không được nhận lại
+                Game.rewardIndices = Game.rewardIndices.filter(idx => idx !== Game.globalQIndex);
+            }
+
+            Game.createExplosion(z.x, z.y, '#10B981');
+            
+            if (Game.currentStage === 4) {
+                Game.bossHp = Math.max(0, Game.bossHp - 1); Game.bossHitTimer = 0.3; AudioManager.bossHit();
+                Game.addFloatingText(Game.canvas.width - 150, Game.canvas.height / 2 - 100, `TRÚNG ĐÒN! +${points}${bonusText}`, "#10B981");
+            } else Game.addFloatingText(z.x, z.y, `CHÍNH XÁC! +${points}${bonusText}`, "#10B981");
+            
+            Game.zombies.forEach(zombie => {
+                zombie.isDead = true;
+                if(zombie.id !== z.id) Game.createExplosion(zombie.x, zombie.y, zombie.color, 5);
+            });
+            
+            Game.stageQIndex++; Game.globalQIndex++; Game.updateHUD();
+            setTimeout(() => { if(Game.isRunning) Game.checkStageProgress(); }, 800);
+        } else {
+            z.isDead = true;
+            AudioManager.wrong(); Game.lives--;
+
+            // KIỂM TRA BẪY TRỪ ĐIỂM BÍ MẬT
+            let penaltyText = "";
+            if (Game.penaltyMap && Game.penaltyMap[Game.globalQIndex] !== undefined) {
+                const penalty = Game.penaltyMap[Game.globalQIndex];
+                Game.score = Math.max(0, Game.score - penalty); // Không để điểm bị âm dưới 0
+                penaltyText = ` -${penalty}Đ`;
+                delete Game.penaltyMap[Game.globalQIndex];
+            }
+
+            Game.createExplosion(z.x, z.y, '#EF4444'); 
+            Game.addFloatingText(z.x, z.y, `SAI! (-1 ❤️)${penaltyText}`, "#EF4444");
+            
+            let speedIncreased = false;
+            Game.zombies.forEach(zombie => {
+                if (!zombie.isDead) {
+                    zombie.speed *= 2; // ZOMBIE NỔI GIẬN CHẠY NHANH X2
+                    speedIncreased = true;
+                }
+            });
+            
+            if (speedIncreased) {
+                Game.addFloatingText(Game.canvas.width/2, Game.canvas.height/2 + 50, "ZOMBIE NỔI GIẬN TĂNG TỐC X2!", "#F59E0B");
+            }
+
+            Game.updateHUD();
+            if(Game.lives <= 0) {
+                Game.triggerHordeAnim();
+            }
+        }
+    },
+
+    winGame: () => { Game.isRunning = false; AudioManager.gameOver(); Game.showResult(true); },
+    loseGame: () => { Game.isRunning = false; AudioManager.gameOver(); Game.showResult(false); },
+
+    triggerHordeAnim: () => {
+        Game.isGameOverAnim = true;
+        Game.zombies = []; 
+        Game.bullets = [];
+        
+        for (let i = 0; i < 25; i++) {
+            Game.zombies.push({
+                id: Math.random(),
+                x: Game.canvas.width + Math.random() * 500, 
+                targetY: Game.canvas.height / 2 - 50 + Math.random() * 200,
+                y: Game.canvas.height / 2 - 50 + Math.random() * 200,
+                width: 50, height: 90, 
+                speed: 500 + Math.random() * 300, 
+                opt: 'x', type: 'fast', wobbleOffset: Math.random() * Math.PI * 2,
+                color: '#EF4444', label: '☠️', isDead: false
+            });
+        }
+        AudioManager.gameOver();
+        setTimeout(Game.loseGame, 3000); 
+    },
+
+    showResult: (isWin) => {
+        UIManager.showScreen('result-screen');
+        // Thay đổi câu chữ khi hiển thị kết quả theo yêu cầu
+        Utils.$id('result-title').innerText = isWin ? "CHIẾN BINH BẤT BẠI!" : "GAME OVER!";
+        Utils.$id('result-title').className = isWin ? "text-4xl md:text-5xl font-black heading-font text-emerald-400 mb-2 cute-title" : "text-4xl md:text-5xl font-black heading-font text-red-500 mb-2 cute-title";
+        
+        Utils.$id('res-student-info').innerText = `Học sinh: ${Game.playerInfo.name} - Lớp: ${Game.playerInfo.className}`;
+        Utils.$id('res-score').innerText = Game.score;
+        Utils.$id('res-correct').innerText = `${Game.correctCount}/${Game.totalGameQuestions}`;
+        Utils.$id('res-lives').innerText = `${Game.lives > 0 ? Game.lives : 0} ❤️`;
+        Utils.$id('res-stage').innerText = isWin ? "Hoàn tất" : `Màn ${Game.currentStage}`;
+        
+        const reviewArea = Utils.$id('review-area'); const ul = Utils.$id('res-mistakes'); ul.innerHTML = '';
+        if(Game.mistakes.length > 0) {
+            reviewArea.classList.remove('hidden');
+            Game.mistakes.forEach(m => {
+                let formattedQ = Utils.formatText(m.q);
+                ul.innerHTML += `
+                    <li class="border-b border-slate-700 pb-3">
+                        <div class="font-bold text-slate-200">${formattedQ}</div>
+                        <div class="text-emerald-400 mt-1 font-bold">✓ Đúng: ${m.correct.toUpperCase()}</div>
+                        ${m.exp ? `<div class="text-slate-400 italic text-xs mt-1">Giải thích: ${Utils.formatText(m.exp)}</div>` : ''}
+                    </li>`;
+            });
+        } else reviewArea.classList.add('hidden');
+
+        const statusEl = Utils.$id('res-submit-status');
+        if (statusEl) statusEl.innerHTML = ''; 
+
+        // GỬI ĐIỂM VỀ GOOGLE SHEETS
+        if (Game.config.sheetUrl && Game.config.sheetUrl.trim() !== "") {
+            // Hiển thị trạng thái đang gửi
+            if (statusEl) statusEl.innerHTML = '⏳ Đang gửi kết quả về hệ thống...';
+            
+            const payload = {
+                gameTitle: Game.config.title,
+                studentName: Game.playerInfo.name,
+                className: Game.playerInfo.className,
+                score: Game.score,
+                correctCount: Game.correctCount,
+                totalQuestions: Game.totalGameQuestions,
+                isWin: isWin
+            };
+            
+            fetch(Game.config.sheetUrl, {
+                method: 'POST',
+                mode: 'no-cors', 
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                // Hiển thị trạng thái thành công
+                if (statusEl) statusEl.innerHTML = '✅ Kết quả của bạn đã được ghi nhận!';
+                console.log("Đã gửi báo cáo điểm ngầm thành công");
+            }).catch(e => {
+                // Hiển thị trạng thái lỗi
+                if (statusEl) statusEl.innerHTML = '❌ Mạng không ổn định, không thể gửi điểm.';
+                console.error("Lỗi gửi điểm:", e);
+            });
+        }
+    },
+
+    retryGame: () => { Game.startGame(Game.config); },
+
+    update: (dt) => {
+        Game.player.angle = Math.atan2(Game.mouse.y - Game.player.y, Game.mouse.x - Game.player.x);
+        if (Game.player.recoil > 0) Game.player.recoil -= dt * 60;
+        if (Game.player.recoil < 0) Game.player.recoil = 0;
+        if (Game.bossHitTimer > 0) Game.bossHitTimer -= dt;
+
+        // Xử lý đếm ngược thời gian
+        if (!Game.isGameOverAnim && Game.timeLeft > 0 && Game.zombies.length > 0 && !Game.zombies.every(z => z.isDead)) {
+            Game.timeLeft -= dt;
+            if(Game.timeLeft <= 0) { Game.timeLeft = 0; Game.handleTimeout(); }
+            if(Math.floor(Game.timeLeft * 10) % 10 === 0) Game.updateHUD(); 
+        }
+
+        // Bullets
+        for(let i=Game.bullets.length-1; i>=0; i--) {
+            let b = Game.bullets[i]; b.x += b.vx * dt; b.y += b.vy * dt;
+            if(b.x < 0 || b.x > Game.canvas.width || b.y < 0 || b.y > Game.canvas.height) { Game.bullets.splice(i, 1); continue; }
+            
+            let hit = false;
+            for(let j=Game.zombies.length-1; j>=0; j--) {
+                let z = Game.zombies[j]; if (z.isDead) continue;
+                
+                // Mở rộng hitbox
+                if(Math.abs(b.x - z.x) < z.width/2 + b.radius + 10 && Math.abs(b.y - z.y) < z.height/2 + b.radius + 20) {
+                    AudioManager.hit(); hit = true; Game.checkAnswer(z); break;
+                }
+            }
+            if(hit) Game.bullets.splice(i, 1);
+        }
+
+        // Xử lý Zombie di chuyển từ Phải sang Trái
+        for(let i=Game.zombies.length-1; i>=0; i--) {
+            let z = Game.zombies[i];
+            if (z.isDead) continue;
+            
+            z.x -= z.speed * dt;
+            z.y = z.targetY + Math.sin(performance.now()*0.003 + z.wobbleOffset) * 30;
+            
+            if(z.x < 120) { 
+                if (Game.isGameOverAnim) {
+                    z.isDead = true; 
+                    Game.createExplosion(z.x, z.y, '#EF4444', 15);
+                    continue;
+                }
+
+                Game.lives--; AudioManager.wrong();
+                Game.createExplosion(z.x, z.y, '#EF4444'); Game.addFloatingText(Game.canvas.width/2, Game.canvas.height/2, "ZOMBIE LỌT LƯỚI!", "#EF4444");
+                
+                const q = Game.currentStageQuestions[Game.stageQIndex]; 
+                const correctOpt = typeof Game.currentCorrectOpt !== 'undefined' ? Game.currentCorrectOpt : q.ans;
+                Game.mistakes.push({ q: q.text, correct: correctOpt, exp: q.exp });
+                
+                Game.zombies.forEach(zombie => { zombie.isDead = true; Game.createExplosion(zombie.x, zombie.y, zombie.color); });
+                Game.updateHUD();
+                
+                if(Game.lives <= 0) {
+                    Game.triggerHordeAnim();
+                }
+                else { Game.stageQIndex++; Game.globalQIndex++; setTimeout(() => { if(Game.isRunning) Game.checkStageProgress(); }, 1500); }
+                break;
+            }
+        }
+
+        Game.zombies = Game.zombies.filter(z => !z.isDead);
+
+        for(let i=Game.particles.length-1; i>=0; i--) {
+            let p = Game.particles[i]; p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt * 1.5;
+            if(p.life <= 0) Game.particles.splice(i, 1);
+        }
+        for(let i=Game.floatingTexts.length-1; i>=0; i--) {
+            let t = Game.floatingTexts[i]; t.y += t.vy * dt; t.life -= dt * 0.8;
+            if(t.life <= 0) Game.floatingTexts.splice(i, 1);
+        }
+    },
+
+    draw: () => {
+        const ctx = Game.ctx; 
+        
+        // --- VẼ GIAO DIỆN BÓNG ĐÊM ---
+        const skyGradient = ctx.createLinearGradient(0, 0, 0, Game.canvas.height);
+        skyGradient.addColorStop(0, '#020617');
+        skyGradient.addColorStop(0.6, '#0f172a');
+        skyGradient.addColorStop(1, '#1e293b');
+        ctx.fillStyle = skyGradient;
+        ctx.fillRect(0, 0, Game.canvas.width, Game.canvas.height);
+
+        // Ngôi sao lấp lánh
+        ctx.fillStyle = '#ffffff';
+        if (Game.stars) {
+            Game.stars.forEach(s => {
+                ctx.globalAlpha = 0.2 + (Math.sin(performance.now() * s.blinkSpeed + s.offset) + 1) * 0.4;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.size, 0, Math.PI*2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1.0; 
+        }
+
+        // Mặt trăng khuyết
+        const moonX = Game.canvas.width - 150;
+        const moonY = 150;
+        ctx.fillStyle = '#fdf08a'; 
+        ctx.shadowColor = '#fef08a';
+        ctx.shadowBlur = 25; 
+        ctx.beginPath(); ctx.arc(moonX, moonY, 40, 0, Math.PI*2); ctx.fill();
+        ctx.globalCompositeOperation = 'destination-out'; 
+        ctx.beginPath(); ctx.arc(moonX - 12, moonY - 12, 40, 0, Math.PI*2); ctx.fill();
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.shadowBlur = 0; 
+        // ------------------------------
+
+        // Vẽ BOSS nếu ở Màn 4
+        if (Game.currentStage === 4 && !Game.bossDeadAnim) {
+            ctx.save();
+            const bossX = Game.canvas.width - 150; 
+            const bossY = Game.canvas.height / 2 + Math.sin(performance.now()*0.002)*15; 
+            ctx.translate(bossX, bossY); ctx.scale(2.5, 2.5);
+            ctx.fillStyle = Game.bossHitTimer > 0 ? '#FCA5A5' : '#1e293b'; 
+            ctx.beginPath(); ctx.roundRect(-40, -40, 80, 70, 15); ctx.fill();
+            ctx.fillStyle = '#0f172a'; ctx.beginPath(); ctx.roundRect(-35, 15, 70, 30, 5); ctx.fill();
+            ctx.fillStyle = '#cbd5e1'; for(let i=0; i<4; i++) { ctx.beginPath(); ctx.moveTo(-25 + i*15, 15); ctx.lineTo(-17 + i*15, 25); ctx.lineTo(-10 + i*15, 15); ctx.fill(); }
+            ctx.fillStyle = Game.bossHitTimer > 0 ? '#EF4444' : '#EAB308'; 
+            ctx.beginPath(); ctx.arc(-15, -10, 10, 0, Math.PI*2); ctx.arc(15, -10, 10, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = 'rgba(236, 72, 153, 0.8)'; ctx.beginPath(); ctx.arc(0, -40, 25, Math.PI, 0); ctx.fill();
+            ctx.restore();
+
+            const barW = Math.min(300, Game.canvas.width * 0.3);
+            ctx.fillStyle = '#020617'; ctx.fillRect(bossX - barW/2, bossY - 140, barW, 20); 
+            const hpPercent = Game.bossMaxHp > 0 ? (Game.bossHp / Game.bossMaxHp) : 0;
+            ctx.fillStyle = '#EF4444'; ctx.fillRect(bossX - barW/2, bossY - 140, barW * hpPercent, 20);
+            ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 2; ctx.strokeRect(bossX - barW/2, bossY - 140, barW, 20); 
+            ctx.fillStyle = '#FFF'; ctx.font = 'bold 12px Inter'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText("ĐẠI ZOMBIE", bossX, bossY - 130);
+        }
+
+        // Vẽ Ngôi nhà và Căn cứ (Bên TRÁI)
+        ctx.save(); 
+        
+        // ---> VẼ NGÔI NHÀ PHÉP THUẬT CÓ ỐNG KHÓI <---
+        const houseX = 0;
+        const houseY = Game.player.y - 200; 
+        
+        // Thân nhà màu tím
+        ctx.fillStyle = '#4c1d95'; // Tím đậm
+        ctx.fillRect(houseX, houseY, 110, 300);
+        
+        // Mái nhà nhọn
+        ctx.fillStyle = '#0f172a'; // Xanh đen
+        ctx.beginPath();
+        ctx.moveTo(houseX - 10, houseY);
+        ctx.lineTo(houseX + 55, houseY - 90);
+        ctx.lineTo(houseX + 120, houseY);
+        ctx.closePath();
+        ctx.fill();
+
+        // Viền lượn sóng cam (Đỉnh tường)
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        for(let i=0; i<5; i++) {
+            ctx.arc(houseX + 11 + i*22, houseY, 11, Math.PI, 0);
+        }
+        ctx.stroke();
+        
+        // Ống khói (Cột bên phải)
+        ctx.fillStyle = '#713f12'; // Nâu
+        ctx.fillRect(houseX + 90, houseY - 100, 20, 70);
+        ctx.fillStyle = '#422006'; // Các thanh chia đốt ống khói
+        for(let i=0; i<5; i++) {
+            ctx.fillRect(houseX + 90, houseY - 100 + i*14, 20, 2);
+        }
+        
+        // Các cửa sổ cao tầng sáng vàng
+        ctx.fillStyle = Game.isGameOverAnim ? '#ef4444' : '#fef08a'; 
+        // Cửa sổ chữ thập trên mái
+        ctx.beginPath(); ctx.arc(houseX + 55, houseY - 30, 15, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#4c1d95'; ctx.fillRect(houseX + 53, houseY - 45, 4, 30); ctx.fillRect(houseX + 40, houseY - 32, 30, 4);
+        
+        // Cửa sổ vuông
+        ctx.fillStyle = Game.isGameOverAnim ? '#ef4444' : '#fef08a'; 
+        ctx.fillRect(houseX + 20, houseY + 30, 25, 30);
+        ctx.fillRect(houseX + 65, houseY + 30, 25, 30);
+        ctx.fillRect(houseX + 20, houseY + 90, 25, 30);
+        
+        // Cửa chính
+        ctx.fillStyle = '#92400e';
+        ctx.beginPath(); ctx.roundRect(houseX + 60, houseY + 160, 40, 90, 20); ctx.fill();
+        ctx.fillStyle = '#f59e0b'; // Tay nắm cửa
+        ctx.beginPath(); ctx.arc(houseX + 90, houseY + 210, 3, 0, Math.PI*2); ctx.fill();
+
+        // Cây kẹo mút (Lollipop) trước nhà
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(houseX + 30, houseY + 250); ctx.lineTo(houseX + 30, houseY + 180); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(houseX - 10, houseY + 250); ctx.lineTo(houseX - 10, houseY + 200); ctx.stroke();
+        ctx.fillStyle = '#10b981'; ctx.beginPath(); ctx.arc(houseX + 30, houseY + 180, 10, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#ec4899'; ctx.beginPath(); ctx.arc(houseX - 10, houseY + 200, 10, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(houseX+23, houseY+180); ctx.lineTo(houseX+37, houseY+180); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(houseX-17, houseY+200); ctx.lineTo(houseX-3, houseY+200); ctx.stroke();
+
+        // Chuyển tọa độ tới nòng pháo
+        ctx.translate(Game.player.x, Game.player.y);
+        ctx.fillStyle = '#1e293b'; ctx.beginPath(); ctx.arc(0, 0, 45, 0, Math.PI*2); ctx.fill(); // Bệ pháo tròn
+        ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 4; ctx.stroke();
+        
+        ctx.rotate(Game.player.angle); // Pháo xoay theo hướng chuột
+        const recoil = Game.player.recoil;
+        ctx.fillStyle = '#475569'; ctx.fillRect(-15 - recoil, -15, 50, 30);
+        ctx.fillStyle = '#3b82f6'; ctx.fillRect(35 - recoil, -8, 25, 16);
+        ctx.restore();
+
+        // TỐI ƯU HIỆU SUẤT: Khai báo Font chữ ở ngoài vòng lặp
+        ctx.font = '900 18px Inter';
+        ctx.textAlign = 'center'; 
+        ctx.textBaseline = 'middle';
+        
+        // VẼ ZOMBIE HUYỀN THOẠI
+        Game.zombies.forEach(z => {
+            ctx.save();
+            ctx.translate(z.x, z.y);
+
+            const walkCycle = Math.sin(performance.now() * 0.01 + z.wobbleOffset);
+            
+            // Đầu Zombie
+            ctx.fillStyle = '#22c55e'; // Xanh lục
+            ctx.beginPath(); ctx.roundRect(-20, -40, 40, 40, 8); ctx.fill();
+            
+            // Mắt to mắt nhỏ ngộ nghĩnh
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(-12, -30, 6, 6);
+            ctx.fillRect(4, -28, 8, 4);
+
+            // Cánh tay sau lưng
+            ctx.fillStyle = '#22c55e';
+            ctx.beginPath(); ctx.roundRect(15, -5 + walkCycle * 5, 10, 20, 5); ctx.fill();
+
+            // Thân áo bạc màu
+            ctx.fillStyle = '#64748b'; 
+            ctx.beginPath(); ctx.roundRect(-22, 0, 44, 35, 5); ctx.fill();
+
+            // Chân bước đi khập khiễng
+            ctx.fillStyle = '#1e293b'; 
+            ctx.fillRect(-15, 35, 12, 15 + walkCycle * 5); // Chân trái
+            ctx.fillRect(3, 35, 12, 15 - walkCycle * 5);  // Chân phải
+
+            // Cánh tay vung vẩy phía trước
+            ctx.fillStyle = '#22c55e';
+            ctx.beginPath(); ctx.roundRect(-25, -5 - walkCycle * 5, 10, 20, 5); ctx.fill();
+
+            // --- BẢNG ĐÁP ÁN GẮN TRÊN NGỰC ÁO ---
+            ctx.fillStyle = z.color; // Màu nền theo đáp án
+            ctx.beginPath(); ctx.roundRect(-16, 4, 32, 26, 4); ctx.fill();
+            
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+            
+            ctx.fillStyle = '#fff';
+            ctx.fillText(z.label, 0, 18);
+
+            ctx.restore();
+        });
+
+        // VẼ ĐẠN VÀ HIỆU ỨNG
+        ctx.fillStyle = '#FCD34D';
+        Game.bullets.forEach(b => {
+            ctx.beginPath(); ctx.arc(b.x, b.y, b.radius, 0, Math.PI*2); ctx.fill();
+        });
+
+        Game.particles.forEach(p => {
+            ctx.fillStyle = p.color; ctx.globalAlpha = p.life;
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+        });
+        ctx.globalAlpha = 1.0;
+
+        Game.floatingTexts.forEach(t => {
+            ctx.fillStyle = t.color; ctx.globalAlpha = Math.max(0, t.life);
+            ctx.font = 'bold 20px Inter'; ctx.textAlign = 'center';
+            ctx.fillText(t.text, t.x, t.y);
+        });
+        ctx.globalAlpha = 1.0;
+    },
+
+    loop: (time) => {
+        if (!Game.isRunning) return;
+        const dt = (time - Game.lastTime) / 1000;
+        Game.lastTime = time;
+        if (!Game.isPaused) {
+            Game.update(dt);
+            Game.draw();
+        }
+        requestAnimationFrame(Game.loop);
+    },
+
+    quitGame: () => {
+        Game.isRunning = false;
+        Utils.$id('game-overlay').classList.add('hidden-screen');
+        if (window.__EXPORTED_GAME_DATA__) {
+            Game.prepareLogin(Game.config.id);
+        } else {
+            UIManager.showScreen('library-screen');
+        }
+    },
+
+    togglePause: () => {
+        Game.isPaused = !Game.isPaused;
+        const overlay = Utils.$id('game-overlay');
+        if (Game.isPaused) {
+            Utils.$id('overlay-title').innerText = "TẠM DỪNG";
+            Utils.$id('overlay-desc').innerText = "Nghỉ ngơi một chút trước khi chiến đấu tiếp!";
+            Utils.$id('overlay-btn1').classList.remove('hidden');
+            Utils.$id('overlay-btn1').onclick = Game.togglePause;
+            overlay.classList.remove('hidden-screen');
+        } else {
+            overlay.classList.add('hidden-screen');
+            Game.lastTime = performance.now();
+            requestAnimationFrame(Game.loop);
+        }
+    }
+};
+
+function showHelp() {
+    Utils.showAlert("Hướng Dẫn Chơi", `
+        - Di chuột hoặc chạm để ngắm. Click/Chạm để bắn.<br>
+        - Bạn có <b>thời gian giới hạn</b> cho mỗi câu hỏi.<br><br>
+        <b>🧟 ZOMBIE MANG ĐÁP ÁN:</b><br>
+        - Bắn trúng Zombie mang đáp án <b>ĐÚNG</b> để tiêu diệt. Bí mật: Có 2 câu hỏi ẩn chứa phần thưởng <b>+1 ❤️</b> khi bắn đúng!<br>
+        - Bắn sai, hết giờ hoặc để Zombie lọt lưới sẽ bị <b>TRỪ 1 TIM</b>.<br><br>
+        <b>⚠️ CHÚ Ý: CẠM BẪY NGUY HIỂM!</b><br>
+        - Có 5 câu hỏi bị gài bẫy ngầm. Nếu bắn sai ở câu đó, ngoài mất tim, bạn còn bị <b>TRỪ ĐIỂM BẤT NGỜ</b> (-10, -20, -50, -200, -300).<br>
+        - Bắn sai sẽ làm Zombie nổi giận và <b>chạy nhanh GẤP ĐÔI!</b><br>
+        - Màn 4 có Đại Zombie cần bắn trúng rất nhiều lần!
+    `);
+}
+
+window.onload = function() {
+    Game.init();
+    
+    // CÔNG TẮC BÍ MẬT DÀNH CHO GIÁO VIÊN
+    let secretClickCount = 0;
+    let secretClickTimer = null;
+    const trigger = Utils.$id('secret-admin-trigger');
+    if (trigger) {
+        trigger.onclick = () => {
+            secretClickCount++;
+            clearTimeout(secretClickTimer);
+            // Yêu cầu bấm 3 lần liên tiếp trong vòng 1 giây
+            secretClickTimer = setTimeout(() => secretClickCount = 0, 1000);
+            if(secretClickCount >= 3) {
+                TeacherManager.checkTeacherAccess();
+                secretClickCount = 0; // Reset bộ đếm sau khi mở thành công
+            }
+        };
+    }
+
+    if (window.__EXPORTED_GAME_DATA__) {
+        // Ẩn các nút không cần thiết trong bản xuất HTML cho học sinh
+        const style = document.createElement('style');
+        style.innerHTML = '#btn-back-home, #res-btn-home, #res-btn-library { display: none !important; }';
+        document.head.appendChild(style);
+        
+        Game.config = window.__EXPORTED_GAME_DATA__;
+        Game.prepareLogin(Game.config.id);
+    } else {
+        UIManager.showScreen('home-screen');
+        if(!localStorage.getItem('ZomEduGames')) DataStore.saveGames([DataStore.demoGame]);
+    }
+};
+</script>
+
+</body></html>
